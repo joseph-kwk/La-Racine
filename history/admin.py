@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import HistoryEvent
 
-# Register your models here.
+@admin.register(HistoryEvent)
+class HistoryEventAdmin(admin.ModelAdmin):
+    list_display = ('member', 'event_type', 'date')
