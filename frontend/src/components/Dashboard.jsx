@@ -54,8 +54,13 @@ const Dashboard = () => {
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-content">
-          <h1 className="dashboard-title">La Racine</h1>
-          <p className="dashboard-subtitle">Family Tree Management</p>
+          <div className="dashboard-brand">
+            <img src="/logo.png" alt="La Racine Logo" className="dashboard-logo" />
+            <div>
+              <h1 className="dashboard-title">La Racine</h1>
+              <p className="dashboard-subtitle">Family Tree Management</p>
+            </div>
+          </div>
         </div>
         <div className="header-actions">
           <button onClick={handleLogout} className="btn btn-outline">

@@ -23,7 +23,27 @@ const Register = () => {
     if (result.success) {
       navigate('/login');
     } else {
-      setError(result.error.username?.[0] || result.error.email?.[0] || 'Registration failed');
+      // Better error handling to show more specific error messages
+      let errorMessage = 'Registration failed';
+      
+      if (result.error) {
+        if (result.error.username) {
+          errorMessage = `Username: ${result.error.username[0]}`;
+        } else if (result.error.email) {
+          errorMessage = `Email: ${result.error.email[0]}`;
+        } else if (result.error.password) {
+          errorMessage = `Password: ${result.error.password[0]}`;
+        } else if (result.error.non_field_errors) {
+          errorMessage = result.error.non_field_errors[0];
+        } else if (result.error.detail) {
+          errorMessage = result.error.detail;
+        } else if (typeof result.error === 'string') {
+          errorMessage = result.error;
+        }
+      }
+      
+      setError(errorMessage);
+      console.error('Registration error:', result.error);
     }
     
     setLoading(false);
@@ -32,9 +52,10 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-primary px-4 py-12">
       <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
-        <div>
-          <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-6 mt-6">
-            🌳 Create your La Racine account
+        <div className="text-center mb-6">
+          <img src="/logo.png" alt="La Racine Logo" className="login-logo" />
+          <h2 className="text-3xl font-extrabold text-gray-900 mt-4">
+            Create your La Racine account
           </h2>
         </div>
         <form className="mt-8" onSubmit={handleSubmit}>
