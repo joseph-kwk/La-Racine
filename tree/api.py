@@ -1,9 +1,9 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions, filters
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import Tree, FamilyMember, Update
 from .serializers import TreeSerializer, FamilyMemberSerializer, UpdateSerializer
 
-
-from rest_framework import permissions, filters
 
 class TreeViewSet(viewsets.ModelViewSet):
     queryset = Tree.objects.all()
@@ -12,6 +12,14 @@ class TreeViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'created_by__username']
     ordering_fields = ['name', 'created_at']
+
+    @action(detail=True, methods=['get'])
+    def members(self, request, pk=None):
+        """Get all members for a specific tree"""
+        tree = self.get_object()
+        members = FamilyMember.objects.filter(tree=tree)
+        serializer = FamilyMemberSerializer(members, many=True)
+        return Response(serializer.data)
 
 
 class FamilyMemberViewSet(viewsets.ModelViewSet):

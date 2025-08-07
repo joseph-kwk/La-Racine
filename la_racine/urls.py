@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 from rest_framework import routers
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -27,15 +28,32 @@ from notifications.api import NotificationViewSet
 from history.api import HistoryEventViewSet
 from core.views import RegisterView
 
+def api_root(request):
+    """API root endpoint"""
+    return JsonResponse({
+        'message': 'La Racine Family Tree API',
+        'version': '1.0',
+        'endpoints': {
+            'admin': '/admin/',
+            'api': '/api/',
+            'auth': {
+                'register': '/api/auth/register/',
+                'login': '/api/auth/token/',
+                'refresh': '/api/auth/token/refresh/',
+            }
+        }
+    })
+
 router = routers.DefaultRouter()
 router.register(r'userprofiles', UserProfileViewSet)
 router.register(r'trees', TreeViewSet)
-router.register(r'familymembers', FamilyMemberViewSet)
+router.register(r'members', FamilyMemberViewSet)
 router.register(r'updates', UpdateViewSet)
 router.register(r'notifications', NotificationViewSet)
 router.register(r'historyevents', HistoryEventViewSet)
 
 urlpatterns = [
+    path('', api_root, name='api_root'),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/auth/register/', RegisterView.as_view(), name='register'),

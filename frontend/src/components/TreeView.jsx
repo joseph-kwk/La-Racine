@@ -1,56 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useParams, Link } from 'react-router-dom';
 
 const TreeView = () => {
   const { treeId } = useParams();
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [tree, setTree] = useState(null);
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    const fetchTreeData = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        
+        // Fetch tree details
+        const treeResponse = await fetch(`http://127.0.0.1:8000/api/trees/${treeId}/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (treeResponse.ok) {
+          const treeData = await treeResponse.json();
+          setTree(treeData);
+        } else {
+          setError('Tree not found');
+          return;
+        }
+
+        // Fetch tree members
+        const membersResponse = await fetch(`http://127.0.0.1:8000/api/trees/${treeId}/members/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (membersResponse.ok) {
+          const membersData = await membersResponse.json();
+          setMembers(membersData);
+        }
+      } catch {
+        setError('Network error. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchTreeData();
   }, [treeId]);
-
-  const fetchTreeData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      
-      // Fetch tree details
-      const treeResponse = await fetch(`http://127.0.0.1:8000/api/trees/${treeId}/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (treeResponse.ok) {
-        const treeData = await treeResponse.json();
-        setTree(treeData);
-      } else {
-        setError('Tree not found');
-        return;
-      }
-
-      // Fetch tree members
-      const membersResponse = await fetch(`http://127.0.0.1:8000/api/trees/${treeId}/members/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (membersResponse.ok) {
-        const membersData = await membersResponse.json();
-        setMembers(membersData);
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleDeleteMember = async (memberId, memberName) => {
     if (!confirm(`Are you sure you want to remove "${memberName}" from the tree?`)) {
@@ -58,7 +55,7 @@ const TreeView = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch(`http://127.0.0.1:8000/api/members/${memberId}/`, {
         method: 'DELETE',
         headers: {
@@ -71,7 +68,7 @@ const TreeView = () => {
       } else {
         setError('Failed to remove member');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     }
   };

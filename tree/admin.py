@@ -7,7 +7,7 @@ class TreeAdmin(admin.ModelAdmin):
 
 @admin.register(FamilyMember)
 class FamilyMemberAdmin(admin.ModelAdmin):
-    list_display = ('name', 'tree', 'dob', 'is_alive', 'added_by')
+    list_display = ('name', 'tree', 'birth_date', 'is_alive', 'added_by')
 
 @admin.register(Update)
 class UpdateAdmin(admin.ModelAdmin):

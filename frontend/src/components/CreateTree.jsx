@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 const CreateTree = () => {
@@ -25,7 +25,7 @@ const CreateTree = () => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch('http://127.0.0.1:8000/api/trees/', {
         method: 'POST',
         headers: {
@@ -45,7 +45,7 @@ const CreateTree = () => {
         const errorData = await response.json();
         setError(errorData.detail || 'Failed to create tree');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);

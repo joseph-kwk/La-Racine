@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 const AddMember = () => {
   const { treeId } = useParams();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     first_name: '',
@@ -31,7 +29,7 @@ const AddMember = () => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       
       // Prepare data (remove empty values)
       const memberData = {
@@ -61,7 +59,7 @@ const AddMember = () => {
         const errorData = await response.json();
         setError(errorData.detail || 'Failed to add member');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);

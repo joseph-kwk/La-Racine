@@ -26,4 +26,12 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    files: ['*.config.js', 'vite.config.js', 'postcss.config.js', 'tailwind.config.js'],
+    languageOptions: {
+      globals: globals.node,
+      ecmaVersion: 2020,
+      sourceType: 'module',
+    },
+  },
 ])

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
 
 const TreeList = () => {
@@ -15,7 +15,7 @@ const TreeList = () => {
 
   const fetchTrees = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch('http://127.0.0.1:8000/api/trees/', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -28,7 +28,7 @@ const TreeList = () => {
       } else {
         setError('Failed to fetch trees');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
@@ -41,7 +41,7 @@ const TreeList = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch(`http://127.0.0.1:8000/api/trees/${treeId}/`, {
         method: 'DELETE',
         headers: {
@@ -54,7 +54,7 @@ const TreeList = () => {
       } else {
         setError('Failed to delete tree');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     }
   };

@@ -36,11 +36,11 @@ export const treeAPI = {
 
 // Family Members API
 export const memberAPI = {
-  getAllMembers: () => api.get('/familymembers/'),
-  getMember: (id) => api.get(`/familymembers/${id}/`),
-  createMember: (memberData) => api.post('/familymembers/', memberData),
-  updateMember: (id, memberData) => api.put(`/familymembers/${id}/`, memberData),
-  deleteMember: (id) => api.delete(`/familymembers/${id}/`),
+  getAllMembers: () => api.get('/members/'),
+  getMember: (id) => api.get(`/members/${id}/`),
+  createMember: (memberData) => api.post('/members/', memberData),
+  updateMember: (id, memberData) => api.put(`/members/${id}/`, memberData),
+  deleteMember: (id) => api.delete(`/members/${id}/`),
 };
 
 // Notifications API
