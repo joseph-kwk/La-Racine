@@ -5,12 +5,22 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import TreeView from './components/TreeView';
+import TreeList from './components/TreeList';
+import CreateTree from './components/CreateTree';
+import AddMember from './components/AddMember';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="dashboard-container">
+        <div className="empty-state">
+          <div className="empty-state-icon">⏳</div>
+          <p className="empty-state-text">Loading...</p>
+        </div>
+      </div>
+    );
   }
   
   return isAuthenticated ? children : <Navigate to="/login" />;
@@ -20,7 +30,14 @@ const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="dashboard-container">
+        <div className="empty-state">
+          <div className="empty-state-icon">⏳</div>
+          <p className="empty-state-text">Loading...</p>
+        </div>
+      </div>
+    );
   }
   
   return !isAuthenticated ? children : <Navigate to="/dashboard" />;
@@ -44,6 +61,26 @@ function AppRoutes() {
           <Dashboard />
         </ProtectedRoute>
       } />
+      <Route path="/trees" element={
+        <ProtectedRoute>
+          <TreeList />
+        </ProtectedRoute>
+      } />
+      <Route path="/trees/new" element={
+        <ProtectedRoute>
+          <CreateTree />
+        </ProtectedRoute>
+      } />
+      <Route path="/trees/:treeId" element={
+        <ProtectedRoute>
+          <TreeView />
+        </ProtectedRoute>
+      } />
+      <Route path="/trees/:treeId/members/new" element={
+        <ProtectedRoute>
+          <AddMember />
+        </ProtectedRoute>
+      } />
       <Route path="/tree/:id" element={
         <ProtectedRoute>
           <TreeView />
@@ -58,9 +95,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50">
-          <AppRoutes />
-        </div>
+        <AppRoutes />
       </Router>
     </AuthProvider>
   );
