@@ -27,7 +27,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['*.config.js', 'vite.config.js', 'postcss.config.js', 'tailwind.config.js'],
+    files: ['*.config.js', 'vite.config.js'],
     languageOptions: {
       globals: globals.node,
       ecmaVersion: 2020,
