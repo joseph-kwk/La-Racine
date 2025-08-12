@@ -9,42 +9,31 @@ import TreeView from './components/TreeView';
 import TreeList from './components/TreeList';
 import CreateTree from './components/CreateTree';
 import AddMember from './components/AddMember';
+import Header from './components/Header';
+import LoadingBar from './components/LoadingBar';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="dashboard-container">
-        <div className="empty-state">
-          <div className="empty-state-icon">⏳</div>
-          <p className="empty-state-text">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const { isAuthenticated } = useAuth();
   
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="dashboard-container">
-        <div className="empty-state">
-          <div className="empty-state-icon">⏳</div>
-          <p className="empty-state-text">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const { isAuthenticated } = useAuth();
   
   return !isAuthenticated ? children : <Navigate to="/dashboard" />;
 };
 
 function AppRoutes() {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) {
+    // Keep route tree minimal while loading; LoadingBar will show
+    return (
+      <Routes>
+        <Route path="*" element={<div />} />
+      </Routes>
+    );
+  }
   return (
     <Routes>
       <Route path="/login" element={
@@ -87,7 +76,9 @@ function AppRoutes() {
           <TreeView />
         </ProtectedRoute>
       } />
-      <Route path="/" element={<Navigate to="/dashboard" />} />
+  <Route path="/" element={<Navigate to="/dashboard" />} />
+  {/* Catch-all */}
+  <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
     </Routes>
   );
 }
@@ -96,7 +87,9 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <AppRoutes />
+  <Header />
+  <LoadingBar />
+  <AppRoutes />
       </Router>
     </AuthProvider>
   );

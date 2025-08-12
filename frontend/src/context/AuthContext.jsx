@@ -7,12 +7,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      // TODO: Verify token and get user info
-      setUser({ token });
-    }
-    setLoading(false);
+    const init = async () => {
+      const access = localStorage.getItem('access_token');
+      const refresh = localStorage.getItem('refresh_token');
+      if (!access || !refresh) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const { data } = await authAPI.me();
+        setUser({ id: data.id, username: data.username, email: data.email });
+  } catch {
+        // If refresh failed in interceptor, tokens may be cleared; proceed logged out
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
   }, []);
 
   const login = async (credentials) => {
@@ -23,7 +37,14 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
       
-      setUser({ token: access });
+      // Fetch user profile
+      try {
+        const { data } = await authAPI.me();
+        setUser({ id: data.id, username: data.username, email: data.email });
+      } catch {
+        // Fallback to token-only state if /me fails unexpectedly
+        setUser({ token: access });
+      }
       return { success: true };
     } catch (error) {
       return { success: false, error: error.response?.data || 'Login failed' };

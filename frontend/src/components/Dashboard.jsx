@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { treeAPI } from '../services/api';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  // Auth state used via global Header; no local auth usage here
   const [trees, setTrees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,41 +24,26 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchTrees = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        const response = await fetch('http://127.0.0.1:8000/api/trees/', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          // Enhance trees with mock additional data for demonstration
-          const enhancedTrees = data.map(tree => ({
-            ...tree,
-            tree_type: tree.tree_type || 'primary',
-            member_count: tree.member_count || Math.floor(Math.random() * 50) + 5,
-            role: 'owner', // This would come from the API
-            last_updated: tree.updated_at || tree.created_at,
-            relationship_count: Math.floor(Math.random() * 100) + 10
-          }));
-          setTrees(enhancedTrees);
-        } else {
-          setError('Failed to fetch trees');
-        }
-      } catch {
-        setError('Network error. Please try again.');
+        const { data } = await treeAPI.getAllTrees();
+        const enhancedTrees = data.map(tree => ({
+          ...tree,
+          tree_type: tree.tree_type || 'primary',
+          member_count: tree.member_count || Math.floor(Math.random() * 50) + 5,
+          role: tree.role || 'owner',
+          last_updated: tree.updated_at || tree.created_at,
+          relationship_count: tree.relationship_count || Math.floor(Math.random() * 100) + 10,
+        }));
+        setTrees(enhancedTrees);
+  } catch {
+        setError('Failed to fetch trees');
       } finally {
         setLoading(false);
       }
     };
-
     fetchTrees();
   }, []);
 
-  const handleLogout = () => {
-    logout();
-  };
+  // Header handles logout globally
 
   const filteredTrees = selectedTreeType === 'all' 
     ? trees 
@@ -95,24 +80,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Enhanced Header */}
-      <header className="dashboard-header">
-        <div className="header-content">
-          <div className="dashboard-brand">
-            <img src="/logo.png" alt="La Racine Logo" className="dashboard-logo" />
-            <div>
-              <h1 className="dashboard-title">La Racine</h1>
-              <p className="dashboard-subtitle">Family Tree Management System</p>
-            </div>
-          </div>
-        </div>
-        <div className="header-actions">
-          <span className="welcome-text">Welcome, {user?.username}</span>
-          <button onClick={handleLogout} className="btn btn-outline">
-            Logout
-          </button>
-        </div>
-      </header>
+  {/* Global header is rendered in App */}
 
       {/* Navigation Tabs */}
       <nav className="dashboard-nav">

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4qq1^-4bj31xva33_ix_vj-n@*e7^!1jbk%ul5l(k#y@d5+ig)'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-insecure-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if h] or []
 
 
 # Application definition
@@ -147,15 +148,9 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings for frontend communication
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite default dev server
+CORS_ALLOWED_ORIGINS = [o for o in os.environ.get('DJANGO_CORS_ORIGINS', '').split(',') if o] or [
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://localhost:5174",  # Alternative Vite port
-    "http://127.0.0.1:5174",
-    "http://localhost:5175",  # Another alternative
-    "http://127.0.0.1:5175",
-    "http://localhost:5176",  # Yet another alternative
-    "http://127.0.0.1:5176",
 ]
 
 CORS_ALLOW_CREDENTIALS = True

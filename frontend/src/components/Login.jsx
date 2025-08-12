@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,8 +15,9 @@ const Login = () => {
     setError('');
 
     const result = await login(credentials);
-    
-    if (!result.success) {
+    if (result.success) {
+      navigate('/dashboard', { replace: true });
+    } else {
       setError(result.error.detail || 'Login failed');
     }
     

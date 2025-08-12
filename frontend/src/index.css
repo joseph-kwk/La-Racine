@@ -74,6 +74,13 @@
   --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
   --shadow-card: 0 4px 12px rgba(102, 126, 234, 0.3);
   
+  /* New semantic tokens used by enhanced dashboard */
+  --surface-color: #f8fafc; /* light surface background */
+  --border-color: #e5e7eb;  /* light border */
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-700);
+  --text-muted: var(--gray-500);
+  
   /* Typography */
   --font-size-xs: 12px;
   --font-size-sm: 14px;
@@ -1073,6 +1080,31 @@ body {
   box-shadow: var(--shadow-md);
   margin: 0 auto;
   display: block;
+}
+
+/* ========== Loading Bar ========== */
+.loading-bar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  z-index: 1000;
+}
+
+.loading-bar {
+  width: 30%;
+  height: 100%;
+  background: var(--gradient-button);
+  border-radius: 0 2px 2px 0;
+  animation: loading-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes loading-slide {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(200%); }
+  100% { transform: translateX(400%); }
 }
 
 /* ========== Enhanced Dashboard Features ========== */

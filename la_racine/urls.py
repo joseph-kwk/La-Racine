@@ -26,7 +26,7 @@ from core.api import UserProfileViewSet
 from tree.api import TreeViewSet, FamilyMemberViewSet, UpdateViewSet
 from notifications.api import NotificationViewSet
 from history.api import HistoryEventViewSet
-from core.views import RegisterView
+from core.views import RegisterView, MeView
 
 def api_root(request):
     """API root endpoint"""
@@ -57,6 +57,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/auth/register/', RegisterView.as_view(), name='register'),
+    path('api/auth/me/', MeView.as_view(), name='me'),
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
