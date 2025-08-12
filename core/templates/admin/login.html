@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="icon" href="{% static 'core/logo.png' %}" type="image/png" />
+{% endblock %}
+
+{% block content %}
+<div class="lr-login">
+  <div class="lr-login-card">
+    <div class="lr-login-brand">
+      <img src="{% static 'core/logo.png' %}" alt="La Racine" class="lr-login-logo" />
+      <h1>La Racine Admin</h1>
+      <p class="lr-login-sub">Sign in to continue</p>
+    </div>
+
+    {% if form.errors and not form.non_field_errors %}
+      <p class="errornote">{% translate 'Please correct the error below.' %}</p>
+    {% endif %}
+    {% if form.non_field_errors %}
+      {% for error in form.non_field_errors %}
+        <p class="errornote">{{ error }}</p>
+      {% endfor %}
+    {% endif %}
+
+    <form action="{{ app_path }}" method="post" id="login-form">
+      {% csrf_token %}
+      <input type="hidden" name="this_is_the_login_form" value="1">
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+      {% endif %}
+      <div class="form-row">
+        {{ form.username.errors }}
+        <label for="id_username">{% translate 'Username' %}</label>
+        {{ form.username }}
+      </div>
+      <div class="form-row">
+        {{ form.password.errors }}
+        <label for="id_password">{% translate 'Password' %}</label>
+        {{ form.password }}
+      </div>
+      <div class="submit-row">
+        <input type="submit" value="{% translate 'Log in' %}" />
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

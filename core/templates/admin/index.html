@@ -1,0 +1,16 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div class="lr-admin-dashboard">
+  <div class="lr-hero">
+    <div class="lr-hero-content">
+      <img src="{% static 'core/logo.png' %}" class="lr-hero-logo" alt="La Racine"/>
+      <h1>Welcome to La Racine Admin</h1>
+      <p class="lr-hero-sub">Manage trees, members, notifications, and history with a polished interface.</p>
+    </div>
+  </div>
+
+  {{ app_list|default:apps }}
+</div>
+{% endblock %}

@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
+from django.templatetags.static import static
 from django.http import JsonResponse
 from rest_framework import routers
 from rest_framework_simplejwt.views import (
@@ -55,9 +57,16 @@ router.register(r'historyevents', HistoryEventViewSet)
 urlpatterns = [
     path('', api_root, name='api_root'),
     path('admin/', admin.site.urls),
+    # Favicon for Django-served pages (admin, API root)
+    path('favicon.ico', RedirectView.as_view(url=static('core/logo.png'), permanent=True)),
     path('api/', include(router.urls)),
     path('api/auth/register/', RegisterView.as_view(), name='register'),
     path('api/auth/me/', MeView.as_view(), name='me'),
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
+
+# Admin branding
+admin.site.site_header = "La Racine Administration"
+admin.site.site_title = "La Racine Admin"
+admin.site.index_title = "Welcome to La Racine Admin"
