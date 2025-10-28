@@ -27,6 +27,9 @@ const Header = () => {
         </div>
       </div>
       <div className="header-actions">
+        <Link to="/notifications" className="btn btn-outline" style={{ marginRight: '10px' }}>
+          🔔 Notifications
+        </Link>
         <span className="welcome-text">Welcome, {user?.username}</span>
         <button onClick={handleLogout} className="btn btn-outline">
           Logout

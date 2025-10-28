@@ -5,6 +5,7 @@ import { treeAPI } from '../services/api';
 const Dashboard = () => {
   // Auth state used via global Header; no local auth usage here
   const [trees, setTrees] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeView, setActiveView] = useState('overview');
@@ -22,7 +23,7 @@ const Dashboard = () => {
   ];
 
   useEffect(() => {
-    const fetchTrees = async () => {
+    const fetchData = async () => {
       try {
         const { data } = await treeAPI.getAllTrees();
         const enhancedTrees = data.map(tree => ({
@@ -34,13 +35,25 @@ const Dashboard = () => {
           relationship_count: tree.relationship_count || Math.floor(Math.random() * 100) + 10,
         }));
         setTrees(enhancedTrees);
-  } catch {
-        setError('Failed to fetch trees');
+
+        // Fetch notifications
+        const token = localStorage.getItem('access_token');
+        const notificationsResponse = await fetch('http://127.0.0.1:8000/api/notifications/', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (notificationsResponse.ok) {
+          const notificationsData = await notificationsResponse.json();
+          setNotifications(notificationsData.slice(0, 5)); // Show only recent 5
+        }
+      } catch {
+        setError('Failed to fetch data');
       } finally {
         setLoading(false);
       }
     };
-    fetchTrees();
+    fetchData();
   }, []);
 
   // Header handles logout globally
@@ -188,6 +201,40 @@ const Dashboard = () => {
                 </Link>
               </div>
             </section>
+
+            {/* Recent Notifications */}
+            {notifications.length > 0 && (
+              <section className="dashboard-section">
+                <div className="section-header">
+                  <h2 className="section-title">Recent Notifications</h2>
+                  <Link to="/notifications" className="btn btn-outline">
+                    View All
+                  </Link>
+                </div>
+                <div className="notifications-preview">
+                  {notifications.map(notification => (
+                    <div key={notification.id} className="notification-item">
+                      <div className="notification-icon">
+                        {notification.type === 'Birthday' && '🎂'}
+                        {notification.type === 'Death' && '🕊️'}
+                        {notification.type === 'Addition' && '👶'}
+                      </div>
+                      <div className="notification-content">
+                        <p>
+                          <strong>{notification.related_member.first_name} {notification.related_member.last_name}</strong>
+                          {notification.type === 'Birthday' && ' has a birthday!'}
+                          {notification.type === 'Death' && ' has passed away.'}
+                          {notification.type === 'Addition' && ' was added to your tree.'}
+                        </p>
+                        <span className="notification-date">
+                          {new Date(notification.event_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Recent Activity */}
             <section className="dashboard-section">

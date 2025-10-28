@@ -11,6 +11,8 @@ import CreateTree from './components/CreateTree';
 import AddMember from './components/AddMember';
 import Header from './components/Header';
 import LoadingBar from './components/LoadingBar';
+import Notifications from './components/Notifications';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -71,6 +73,11 @@ function AppRoutes() {
           <AddMember />
         </ProtectedRoute>
       } />
+      <Route path="/notifications" element={
+        <ProtectedRoute>
+          <Notifications />
+        </ProtectedRoute>
+      } />
       <Route path="/tree/:id" element={
         <ProtectedRoute>
           <TreeView />
@@ -85,13 +92,15 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-  <Header />
-  <LoadingBar />
-  <AppRoutes />
-      </Router>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <Header />
+          <LoadingBar />
+          <AppRoutes />
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -7,8 +7,8 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
-  Tooltip,
 } from '@xyflow/react';
+import { Tooltip } from 'react-tooltip';
 import dagre from '@dagrejs/dagre';
 import '@xyflow/react/dist/style.css';
 
@@ -30,18 +30,36 @@ const FamilyMemberNode = ({ data }) => {
   };
 
   return (
-    <Tooltip content={
-      <div style={{ maxWidth: '200px', fontSize: '12px' }}>
-        <strong>{member.first_name} {member.last_name}</strong>
-        {member.nickname && <div>"{member.nickname}"</div>}
-        <div>Gender: {member.gender || 'Not specified'}</div>
-        {member.birth_date && <div>Born: {new Date(member.birth_date).toLocaleDateString()}</div>}
-        {member.death_date && <div>Died: {new Date(member.death_date).toLocaleDateString()}</div>}
-        {member.location && <div>Location: {member.location}</div>}
-        {member.relationship && <div>Relationship: {member.relationship}</div>}
-        {member.notes && <div>Notes: {member.notes}</div>}
-      </div>
-    }>
+    <div
+      className={`family-member-node ${member.gender || 'other'}`}
+      onClick={() => onMemberClick(member)}
+      data-tooltip-id={`member-tooltip-${member.id}`}
+      data-tooltip-content={`${member.first_name} ${member.last_name}${member.nickname ? ` "${member.nickname}"` : ''}`}
+      style={{
+        padding: '12px',
+        borderRadius: '50%',
+        width: '140px',
+        height: '140px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        border: '3px solid',
+        borderColor: member.gender === 'male' ? '#3b82f6' : member.gender === 'female' ? '#ec4899' : '#6b7280',
+        backgroundColor: member.photo ? 'transparent' : (member.gender === 'male' ? '#dbeafe' : member.gender === 'female' ? '#fce7f3' : '#f3f4f6'),
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.2s ease-in-out',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'scale(1.05)';
+        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+      }}
+    >
       <div
         className={`family-member-node ${member.gender || 'other'}`}
         onClick={() => onMemberClick(member)}
@@ -157,7 +175,7 @@ const FamilyMemberNode = ({ data }) => {
           </div>
         )}
       </div>
-    </Tooltip>
+    </div>
   );
 };
 
@@ -275,6 +293,25 @@ const FamilyTree = ({ members, onMemberClick }) => {
         <MiniMap />
         <Background variant="dots" gap={12} size={1} />
       </ReactFlow>
+      {members.map(member => (
+        <Tooltip
+          key={member.id}
+          id={`member-tooltip-${member.id}`}
+          place="top"
+          style={{ maxWidth: '300px', fontSize: '12px', zIndex: 9999 }}
+        >
+          <div>
+            <strong>{member.first_name} {member.last_name}</strong>
+            {member.nickname && <div>"{member.nickname}"</div>}
+            <div>Gender: {member.gender || 'Not specified'}</div>
+            {member.birth_date && <div>Born: {new Date(member.birth_date).toLocaleDateString()}</div>}
+            {member.death_date && <div>Died: {new Date(member.death_date).toLocaleDateString()}</div>}
+            {member.location && <div>Location: {member.location}</div>}
+            {member.relationship && <div>Relationship: {member.relationship}</div>}
+            {member.notes && <div>Notes: {member.notes}</div>}
+          </div>
+        </Tooltip>
+      ))}
     </div>
   );
 };
