@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import FamilyTree from './FamilyTree';
 
 const TreeView = () => {
   const { treeId } = useParams();
@@ -7,6 +8,7 @@ const TreeView = () => {
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'tree'
 
   useEffect(() => {
     const fetchTreeData = async () => {
@@ -48,6 +50,11 @@ const TreeView = () => {
 
     fetchTreeData();
   }, [treeId]);
+
+  const handleMemberClick = (member) => {
+    // Navigate to edit page or show modal
+    window.location.href = `/trees/${treeId}/members/${member.id}/edit`;
+  };
 
   const handleDeleteMember = async (memberId, memberName) => {
     if (!confirm(`Are you sure you want to remove "${memberName}" from the tree?`)) {
@@ -139,6 +146,24 @@ const TreeView = () => {
             </div>
           )}
 
+          {members.length > 0 && (
+            <div className="view-toggle" style={{ marginBottom: '20px' }}>
+              <button
+                className={`btn ${viewMode === 'list' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setViewMode('list')}
+              >
+                📋 List View
+              </button>
+              <button
+                className={`btn ${viewMode === 'tree' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setViewMode('tree')}
+                style={{ marginLeft: '10px' }}
+              >
+                🌳 Tree View
+              </button>
+            </div>
+          )}
+
           {members.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">👥</div>
@@ -149,6 +174,8 @@ const TreeView = () => {
                 Add First Member
               </Link>
             </div>
+          ) : viewMode === 'tree' ? (
+            <FamilyTree members={members} onMemberClick={handleMemberClick} />
           ) : (
             <div className="members-grid">
               {members.map(member => (
