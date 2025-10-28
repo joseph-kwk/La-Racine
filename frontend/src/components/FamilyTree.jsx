@@ -8,6 +8,7 @@ import {
   useEdgesState,
   addEdge,
 } from '@xyflow/react';
+import dagre from '@dagrejs/dagre';
 import '@xyflow/react/dist/style.css';
 
 // Custom node component for family members
@@ -118,6 +119,39 @@ const nodeTypes = {
   familyMember: FamilyMemberNode,
 };
 
+const getLayoutedElements = (nodes, edges, direction = 'TB') => {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+  const nodeWidth = 120;
+  const nodeHeight = 120;
+
+  dagreGraph.setGraph({ rankdir: direction });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const layoutedNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
+};
+
 const FamilyTree = ({ members, onMemberClick }) => {
   // Build nodes and edges from members
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
@@ -125,8 +159,7 @@ const FamilyTree = ({ members, onMemberClick }) => {
     const edges = [];
     const memberMap = new Map(members.map(m => [m.id, m]));
 
-    // Simple layout: place nodes in a grid for now
-    // TODO: Implement proper tree layout
+    // Simple initial positions (will be overridden by dagre)
     members.forEach((member, index) => {
       const x = (index % 5) * 200 + 100;
       const y = Math.floor(index / 5) * 200 + 100;
@@ -169,7 +202,7 @@ const FamilyTree = ({ members, onMemberClick }) => {
       }
     });
 
-    return { nodes, edges };
+    return getLayoutedElements(nodes, edges, 'TB');
   }, [members, onMemberClick]);
 
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
