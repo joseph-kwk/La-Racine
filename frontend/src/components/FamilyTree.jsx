@@ -7,6 +7,7 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
+  Tooltip,
 } from '@xyflow/react';
 import dagre from '@dagrejs/dagre';
 import '@xyflow/react/dist/style.css';
@@ -15,103 +16,148 @@ import '@xyflow/react/dist/style.css';
 const FamilyMemberNode = ({ data }) => {
   const { member, onMemberClick } = data;
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).getFullYear();
+  };
+
+  const getAge = () => {
+    if (!member.birth_date) return '';
+    const birth = new Date(member.birth_date);
+    const death = member.death_date ? new Date(member.death_date) : new Date();
+    const age = death.getFullYear() - birth.getFullYear();
+    return member.death_date ? ` (${age})` : ` (${age})`;
+  };
+
   return (
-    <div
-      className={`family-member-node ${member.gender || 'other'}`}
-      onClick={() => onMemberClick(member)}
-      style={{
-        padding: '12px',
-        borderRadius: '50%',
-        width: '120px',
-        height: '120px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        border: '3px solid',
-        borderColor: member.gender === 'male' ? '#3b82f6' : member.gender === 'female' ? '#ec4899' : '#6b7280',
-        backgroundColor: member.photo ? 'transparent' : (member.gender === 'male' ? '#dbeafe' : member.gender === 'female' ? '#fce7f3' : '#f3f4f6'),
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        transition: 'all 0.2s ease-in-out',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(1.05)';
-        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'scale(1)';
-        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-      }}
-    >
-      {member.photo ? (
-        <img
-          src={member.photo}
-          alt={`${member.first_name} ${member.last_name}`}
-          style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            objectFit: 'cover',
-          }}
-        />
-      ) : (
-        <div
-          style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            backgroundColor: member.gender === 'male' ? '#3b82f6' : member.gender === 'female' ? '#ec4899' : '#6b7280',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '24px',
-            fontWeight: 'bold',
-          }}
-        >
-          {member.first_name[0]}{member.last_name[0]}
-        </div>
-      )}
+    <Tooltip content={
+      <div style={{ maxWidth: '200px', fontSize: '12px' }}>
+        <strong>{member.first_name} {member.last_name}</strong>
+        {member.nickname && <div>"{member.nickname}"</div>}
+        <div>Gender: {member.gender || 'Not specified'}</div>
+        {member.birth_date && <div>Born: {new Date(member.birth_date).toLocaleDateString()}</div>}
+        {member.death_date && <div>Died: {new Date(member.death_date).toLocaleDateString()}</div>}
+        {member.location && <div>Location: {member.location}</div>}
+        {member.relationship && <div>Relationship: {member.relationship}</div>}
+        {member.notes && <div>Notes: {member.notes}</div>}
+      </div>
+    }>
       <div
+        className={`family-member-node ${member.gender || 'other'}`}
+        onClick={() => onMemberClick(member)}
         style={{
-          marginTop: '8px',
-          textAlign: 'center',
-          fontSize: '12px',
-          fontWeight: '600',
-          color: '#374151',
-          maxWidth: '100px',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
+          padding: '12px',
+          borderRadius: '50%',
+          width: '140px',
+          height: '140px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          border: '3px solid',
+          borderColor: member.gender === 'male' ? '#3b82f6' : member.gender === 'female' ? '#ec4899' : '#6b7280',
+          backgroundColor: member.photo ? 'transparent' : (member.gender === 'male' ? '#dbeafe' : member.gender === 'female' ? '#fce7f3' : '#f3f4f6'),
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.2s ease-in-out',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.05)';
+          e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+          e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
         }}
       >
-        {member.first_name}
-        <br />
-        {member.last_name}
-      </div>
-      {!member.is_alive && (
+        {member.photo ? (
+          <img
+            src={member.photo}
+            alt={`${member.first_name} ${member.last_name}`}
+            style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              backgroundColor: member.gender === 'male' ? '#3b82f6' : member.gender === 'female' ? '#ec4899' : '#6b7280',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '28px',
+              fontWeight: 'bold',
+            }}
+          >
+            {member.first_name[0]}{member.last_name[0]}
+          </div>
+        )}
         <div
           style={{
-            position: 'absolute',
-            top: '-5px',
-            right: '-5px',
-            width: '20px',
-            height: '20px',
-            borderRadius: '50%',
-            backgroundColor: '#ef4444',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            marginTop: '8px',
+            textAlign: 'center',
             fontSize: '12px',
-            color: 'white',
-            fontWeight: 'bold',
+            fontWeight: '600',
+            color: '#374151',
+            maxWidth: '120px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}
         >
-          †
+          {member.first_name} {member.last_name}
         </div>
-      )}
-    </div>
+        <div
+          style={{
+            fontSize: '10px',
+            color: '#6b7280',
+            marginTop: '2px',
+          }}
+        >
+          {formatDate(member.birth_date)} - {formatDate(member.death_date) || 'Present'}{getAge()}
+        </div>
+        {member.nickname && (
+          <div
+            style={{
+              fontSize: '10px',
+              color: '#9ca3af',
+              fontStyle: 'italic',
+              marginTop: '2px',
+            }}
+          >
+            "{member.nickname}"
+          </div>
+        )}
+        {!member.is_alive && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '-5px',
+              right: '-5px',
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              backgroundColor: '#ef4444',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '12px',
+              color: 'white',
+              fontWeight: 'bold',
+            }}
+          >
+            †
+          </div>
+        )}
+      </div>
+    </Tooltip>
   );
 };
 
@@ -123,8 +169,8 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-  const nodeWidth = 120;
-  const nodeHeight = 120;
+  const nodeWidth = 140;
+  const nodeHeight = 140;
 
   dagreGraph.setGraph({ rankdir: direction });
 
