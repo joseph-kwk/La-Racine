@@ -1,5 +1,4 @@
-from django.test import TestCase
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
 from tree.models import Tree, FamilyMember
@@ -22,8 +21,8 @@ class AuthAPITests(APITestCase):
         }
         response = self.client.post('/api/auth/register/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['username'], 'newuser')
-        self.assertEqual(response.data['email'], 'new@example.com')
+        self.assertIn('access', response.data)
+        self.assertIn('refresh', response.data)
 
     def test_user_login(self):
         """Test user login endpoint"""
@@ -65,8 +64,6 @@ class AuthAPITests(APITestCase):
 class TreeAPITests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user('testuser', 'test@example.com', 'testpass')
-        self.user.is_staff = True
-        self.user.save()
         self.client.force_authenticate(user=self.user)
         self.tree_data = {'name': 'Test Family Tree'}
 
@@ -96,7 +93,7 @@ class TreeAPITests(APITestCase):
         """Test updating tree"""
         tree = Tree.objects.create(name='Old Name', created_by=self.user)
         update_data = {'name': 'New Name'}
-        response = self.client.patch(f'/api/trees/{tree.id}/', update_data, format='json')
+        response = self.client.put(f'/api/trees/{tree.id}/', update_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         tree.refresh_from_db()
         self.assertEqual(tree.name, 'New Name')
@@ -112,21 +109,18 @@ class TreeAPITests(APITestCase):
 class MemberAPITests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user('testuser', 'test@example.com', 'testpass')
-        self.user.is_staff = True
-        self.user.save()
         self.client.force_authenticate(user=self.user)
         self.tree = Tree.objects.create(name='Test Tree', created_by=self.user)
         self.member_data = {
             'first_name': 'John',
             'last_name': 'Doe',
             'gender': 'male',
-            'birth_date': '1990-01-01',
-            'tree': self.tree.id
+            'birth_date': '1990-01-01'
         }
 
     def test_create_member(self):
         """Test creating a family member"""
-        response = self.client.post('/api/members/', self.member_data, format='json')
+        response = self.client.post(f'/api/trees/{self.tree.id}/members/', self.member_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['first_name'], self.member_data['first_name'])
         self.assertEqual(response.data['tree'], self.tree.id)
@@ -134,10 +128,9 @@ class MemberAPITests(APITestCase):
     def test_list_members(self):
         """Test listing tree members"""
         FamilyMember.objects.create(tree=self.tree, first_name='Jane', last_name='Doe')
-        response = self.client.get('/api/members/')
+        response = self.client.get(f'/api/trees/{self.tree.id}/members/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Should filter by user's trees
-        self.assertTrue(len(response.data) >= 1)
+        self.assertEqual(len(response.data), 1)
 
     def test_get_member_detail(self):
         """Test getting member details"""
@@ -150,7 +143,7 @@ class MemberAPITests(APITestCase):
         """Test updating member"""
         member = FamilyMember.objects.create(tree=self.tree, first_name='Jane', last_name='Doe')
         update_data = {'first_name': 'Janet'}
-        response = self.client.patch(f'/api/members/{member.id}/', update_data, format='json')
+        response = self.client.put(f'/api/members/{member.id}/', update_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         member.refresh_from_db()
         self.assertEqual(member.first_name, 'Janet')
