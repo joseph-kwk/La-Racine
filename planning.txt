@@ -1,0 +1,168 @@
+Here's a complete planning document for my family tree app that weaves together functionality, architecture, user experience, and long-term scalability.
+
+🌳 Family Tree App Creation Document
+Project Name (La Racine): Roots & Branches or AncesTree Purpose: A cross-platform system where users collaboratively build, view, and interact with their living and historic family tree, complete with bios, updates, notifications, and cultural richness.
+
+🧠 Core Concept
+A secure platform where authorized users:
+
+Log in and manage family trees
+
+Add/edit family members with images, life info, location, and updates
+
+View and interact with trees and timelines
+
+Receive event-based notifications (birthdays, deaths, additions)
+
+Celebrate shared heritage with optional regional or cultural theming
+
+👥 User Roles
+Role	Capabilities
+Superuser	Full access to all trees, users, audit logs, system settings
+Tree Admin	Can create/edit tree structure, invite/manage contributors
+Contributor	Add/edit members, biographies, updates, media
+Viewer	View tree, member info, comment if allowed
+🏗️ Database Structure (Django-style Models)
+UserProfile
+user: FK to Django user
+
+nickname, profile_photo, current_location, birthday
+
+Tree
+id, name, created_by, created_at
+
+FamilyMember
+tree: FK
+
+name, dob, dod (optional), photo, bio, nickname, location, parent_ids, spouse_id
+
+is_alive: boolean
+
+added_by
+
+Update
+member: FK to FamilyMember
+
+content, media, created_by, timestamp
+
+Notification
+type: [Birthday, Death, Addition]
+
+target_user, event_date, related_member
+
+🔔 Notification System
+Use Django signals or Celery tasks:
+
+Birthday reminders (daily cron check)
+
+Addition/death alerts via form triggers
+
+In-app notifications + optional email
+
+You can use channels/websockets for live alerts later.
+
+🖥️ Frontend Features
+🎯 Tree Visualization
+Use React Flow or D3.js for interactive layouts
+
+Zoom, pan, expand branches
+
+Node click: view profile modal
+
+📱 Profile Interaction
+Add nickname, current city, life updates, story snippets
+
+Comment or emoji reactions
+
+Timeline view (birth, graduation, weddings, etc.)
+
+🌍 Location Mapping
+Display locations on a family map using Leaflet or Google Maps
+
+Optional migration paths or place histories
+
+🧰 Tech Stack Recommendations
+Layer	Tools / Frameworks
+Backend	Django + Django REST Framework + Celery
+Frontend	React or Vue + TailwindCSS + D3 / React Flow
+Database	PostgreSQL
+Storage	Cloudinary or Firebase for images/videos
+Deployment	Docker, Vercel (frontend), Railway/Render (backend)
+Authentication	Django Allauth or JWT via Knox
+Notifications	Django Signals, Celery, optionally FCM
+💡 Stretch Features & Next Phases
+Tree Themes: African heritage, minimalist, vintage
+
+Audio Memories: Attach voice notes to profiles
+
+Searchable family lineages
+
+Event Calendar: auto-generated from member birthdays, anniversaries
+
+Export Options: PDF/print family tree
+
+Genogram View: for medical/social history display
+
+🚀 Roadmap
+Phase 1: MVP (2–3 months)
+Auth system with user roles
+
+Tree structure with member add/view
+
+Profile editing & basic media upload
+
+Birthday notifications
+
+Phase 2: Interaction & Enrichment (3–5 months)
+Update feed & comment system
+
+Tree visualization UI
+
+Location mapping
+
+Invite flow & sharing
+
+Phase 3: Scale & Polish
+Admin panel for superuser
+
+Push notifications
+
+Theming engine
+
+Mobile PWA wrapper (Capacitor)
+
+
+
+
+
+la_racine/
+├── backend/
+│   ├── la_racine/         # Django project folder (settings, wsgi/asgi, etc.)
+│   │   ├── settings.py
+│   │   └── urls.py
+│   ├── core/              # App for user management & authentication
+│   ├── tree/              # App for family tree data models & logic
+│   ├── profiles/          # Member bios, nicknames, location, photo
+│   ├── notifications/     # Birthdays, updates, deaths, alerts
+│   ├── history/           # Life events, timeline tracking
+│   ├── media/             # Uploaded images/audio (Cloudinary or local)
+│   ├── requirements.txt
+│   └── manage.py
+│
+├── frontend/
+│   ├── public/            # HTML base, favicons, manifest
+│   ├── src/
+│   │   ├── assets/        # Logos, icons, theme files
+│   │   ├── components/    # Buttons, cards, modals
+│   │   ├── views/         # Home, TreeView, MemberProfile, Dashboard
+│   │   ├── services/      # API calls to Django backend
+│   │   ├── context/       # User/session context
+│   │   ├── utils/         # Date formatters, tree builders
+│   │   ├── App.js
+│   │   └── index.js
+│   └── package.json
+│
+├── docs/                  # README, architecture sketches, wireframes
+├── .env                   # Environment variables
+├── .gitignore
+└── README.md

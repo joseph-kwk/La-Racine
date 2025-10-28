@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}La Racine Admin{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'core/admin.css' %}">
+  <link rel="icon" href="{% static 'core/logo.png' %}" type="image/png" />
+{% endblock %}
+
+{% block branding %}
+  <div class="lr-admin-brand">
+    <a href="{% url 'admin:index' %}" class="lr-brand-link">
+      <img src="{% static 'core/logo.png' %}" alt="La Racine" class="lr-brand-logo" />
+      <h1 id="site-name">La Racine</h1>
+    </a>
+  </div>
+{% endblock %}
+
+{% block nav-global %}{{ block.super }}{% endblock %}
+
+{% block bodyclass %}{{ block.super }} lr-admin{% endblock %}

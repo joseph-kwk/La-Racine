@@ -1,0 +1,127 @@
+/* La Racine Admin Theme */
+:root{
+  --lr-primary:#667eea; /* matches gradient start */
+  --lr-secondary:#764ba2; /* matches gradient end */
+  --lr-accent:#a855f7; /* primary purple token */
+  --lr-text:#1f2937; /* gray-800 */
+  --lr-border:#e5e7eb; /* border */
+  --lr-surface:#ffffff;
+  --lr-surface-alt:#f8fafc;
+}
+
+/* Header branding */
+#header{
+  background: linear-gradient(135deg, var(--lr-primary) 0%, var(--lr-secondary) 100%);
+}
+#header a:link, #header a:visited{
+  color:#fff;
+}
+#branding h1, #branding h1 a{
+  color:#fff;
+  font-weight:700;
+}
+/* Logo + title */
+.lr-brand-link{display:flex;align-items:center;gap:10px;text-decoration:none}
+.lr-brand-logo{height:28px;width:auto;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+
+/* Buttons */
+.button, input[type="submit"], .submit-row input{
+  background: linear-gradient(135deg, var(--lr-primary) 0%, var(--lr-secondary) 100%) !important;
+  border:none !important;
+  color:#fff !important;
+  border-radius:8px !important;
+  box-shadow:0 2px 8px rgba(102,126,234,0.3) !important;
+}
+.button:hover, input[type="submit"]:hover, .submit-row input:hover{
+  transform: translateY(-1px);
+}
+
+/* Links */
+a, a:link, a:visited{
+  color: var(--lr-accent);
+}
+a:hover{
+  color: #8b5cf6; /* secondary purple */
+}
+
+/* Modules and cards */
+.module, .selector, .inline-group{
+  border-radius:12px;
+  box-shadow: 0 4px 12px rgba(102,126,234,0.12);
+}
+.module h2, .inline-group h2{
+  background: #fff;
+  color: var(--lr-text);
+  border-bottom: 1px solid var(--lr-border);
+}
+
+/* Login page */
+.login #container{
+  border-radius:16px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.12);
+}
+.login #header{
+  background: linear-gradient(135deg, var(--lr-primary) 0%, var(--lr-secondary) 100%);
+}
+/* Custom login layout */
+.lr-login{display:flex;justify-content:center;align-items:center;min-height:calc(100vh - 80px);padding:24px;background:var(--lr-surface-alt)}
+.lr-login-card{background:#fff;border-radius:16px;padding:32px;max-width:420px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,0.1);border:1px solid var(--lr-border)}
+.lr-login-brand{display:flex;flex-direction:column;align-items:center;margin-bottom:16px}
+.lr-login-logo{height:48px;width:auto;border-radius:8px;margin-bottom:8px}
+.lr-login-sub{color:#6b7280;margin-top:4px}
+
+/* Forms */
+input[type="text"], input[type="password"], select, textarea{
+  border-radius:8px;
+  border:1px solid var(--lr-border);
+  padding:10px 12px;
+}
+input:focus, select:focus, textarea:focus{
+  border-color: var(--lr-accent);
+  box-shadow: 0 0 0 3px rgba(168,85,247,.15);
+}
+
+/* Sidebar */
+#nav-sidebar{background:var(--lr-surface);border-right:1px solid var(--lr-border)}
+#nav-sidebar .module{box-shadow:none;border-radius:0}
+
+/* Breadcrumbs */
+div.breadcrumbs{background:var(--lr-surface);border-bottom:1px solid var(--lr-border)}
+
+/* Tables */
+table{border-collapse:separate;border-spacing:0}
+table thead th{background:var(--lr-surface);border-bottom:1px solid var(--lr-border)}
+table tbody tr{border-bottom:1px solid var(--lr-border)}
+
+/* Messages */
+.success, .warning, .errornote{
+  border-radius:8px;
+}
+
+/* Dashboard hero */
+.lr-hero{background:linear-gradient(135deg, var(--lr-primary) 0%, var(--lr-secondary) 100%);border-radius:16px;color:#fff;margin-bottom:16px}
+.lr-hero-content{padding:24px;display:flex;align-items:center;gap:16px}
+.lr-hero-logo{height:40px;width:auto;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.lr-hero h1{margin:0}
+.lr-hero-sub{opacity:.9;margin:0}
+
+/* Object tools */
+.object-tools a.addlink{
+  background: linear-gradient(135deg, var(--lr-primary) 0%, var(--lr-secondary) 100%);
+  color:#fff;
+  border:none;
+}
+.object-tools a:link, .object-tools a:visited{border-radius:8px}
+
+/* Action buttons */
+.submit-row{border-top:1px solid var(--lr-border)}
+.deletelink{background:#ef4444 !important;color:#fff !important;border:none !important}
+
+/* Sidebar links */
+#nav-sidebar a.section:link, #nav-sidebar a.section:visited{color:var(--lr-text)}
+#nav-sidebar li a:focus, #nav-sidebar li a:hover{background:rgba(102,126,234,.08)}
+/* Active item */
+#nav-sidebar li.current a{background:rgba(102,126,234,.12);border-left:3px solid var(--lr-accent)}
+
+/* Table hover */
+.change-list table tbody tr:hover{background:rgba(102,126,234,.04)}
