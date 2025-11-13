@@ -113,6 +113,7 @@ def test_add_member(token, tree_id):
     """Test adding a family member"""
     print_info("Testing member addition...")
     member_data = {
+        "tree": tree_id,
         "first_name": "John",
         "last_name": "Doe",
         "gender": "male",
@@ -128,7 +129,7 @@ def test_add_member(token, tree_id):
     
     try:
         response = requests.post(
-            f"{BASE_URL}/trees/{tree_id}/members/",
+            f"{BASE_URL}/members/",
             json=member_data,
             headers=headers
         )
@@ -171,7 +172,7 @@ def test_list_members(token, tree_id):
     }
     
     try:
-        response = requests.get(f"{BASE_URL}/trees/{tree_id}/members/", headers=headers)
+        response = requests.get(f"{BASE_URL}/members/?tree={tree_id}", headers=headers)
         if response.status_code == 200:
             data = response.json()
             member_count = len(data)

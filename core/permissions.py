@@ -39,6 +39,7 @@ class RoleActionPermission(permissions.BasePermission):
     - Admin: SAFE_METHODS + POST + PUT + PATCH + DELETE
     Staff always allowed.
     If user has multiple roles, the most permissive applies.
+    If user has no roles, default to Editor permissions for basic CRUD.
     """
     VIEWER = 'Viewer'
     EDITOR = 'Editor'
@@ -64,8 +65,9 @@ class RoleActionPermission(permissions.BasePermission):
             allowed.update(permissions.SAFE_METHODS)
             allowed.update({'POST', 'PUT', 'PATCH', 'DELETE'})
 
-        # If user has no role, default to SAFE_METHODS
+        # If user has no role, default to Editor permissions (basic CRUD)
         if not allowed:
             allowed.update(permissions.SAFE_METHODS)
+            allowed.update({'POST', 'PUT', 'PATCH'})
 
         return method in allowed
