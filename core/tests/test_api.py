@@ -99,7 +99,12 @@ class TreeAPITests(APITestCase):
         self.assertEqual(tree.name, 'New Name')
 
     def test_delete_tree(self):
-        """Test deleting tree"""
+        """Test deleting tree with Admin role"""
+        from django.contrib.auth.models import Group
+        # Give user Admin role (Django group) for permission to delete
+        admin_group, _ = Group.objects.get_or_create(name='Admin')
+        self.user.groups.add(admin_group)
+        
         tree = Tree.objects.create(name='Test Tree', created_by=self.user)
         response = self.client.delete(f'/api/trees/{tree.id}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -120,7 +125,9 @@ class MemberAPITests(APITestCase):
 
     def test_create_member(self):
         """Test creating a family member"""
-        response = self.client.post(f'/api/trees/{self.tree.id}/members/', self.member_data, format='json')
+        # Add tree field to member data
+        member_data_with_tree = {**self.member_data, 'tree': self.tree.id}
+        response = self.client.post('/api/members/', member_data_with_tree, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['first_name'], self.member_data['first_name'])
         self.assertEqual(response.data['tree'], self.tree.id)
@@ -141,15 +148,31 @@ class MemberAPITests(APITestCase):
 
     def test_update_member(self):
         """Test updating member"""
-        member = FamilyMember.objects.create(tree=self.tree, first_name='Jane', last_name='Doe')
-        update_data = {'first_name': 'Janet'}
+        member = FamilyMember.objects.create(
+            tree=self.tree, 
+            first_name='Jane', 
+            last_name='Doe',
+            gender='female'
+        )
+        # Include all required fields in update
+        update_data = {
+            'first_name': 'Janet',
+            'last_name': 'Doe',
+            'gender': 'female',
+            'tree': self.tree.id
+        }
         response = self.client.put(f'/api/members/{member.id}/', update_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         member.refresh_from_db()
         self.assertEqual(member.first_name, 'Janet')
 
     def test_delete_member(self):
-        """Test deleting member"""
+        """Test deleting member with Admin role"""
+        from django.contrib.auth.models import Group
+        # Give user Admin role (Django group) for permission to delete
+        admin_group, _ = Group.objects.get_or_create(name='Admin')
+        self.user.groups.add(admin_group)
+        
         member = FamilyMember.objects.create(tree=self.tree, first_name='Jane', last_name='Doe')
         response = self.client.delete(f'/api/members/{member.id}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
