@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const AddMember = () => {
+  const { t } = useTranslation();
   const { treeId } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -106,7 +108,7 @@ const AddMember = () => {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="first_name" className="form-label">
-                  First Name *
+                  {t('member.firstName')} *
                 </label>
                 <input
                   type="text"
@@ -114,7 +116,7 @@ const AddMember = () => {
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  placeholder="Enter first name"
+                  placeholder={t('member.enterFirstName')}
                   className="form-input"
                   required
                 />
@@ -122,7 +124,7 @@ const AddMember = () => {
 
               <div className="form-group">
                 <label htmlFor="last_name" className="form-label">
-                  Last Name *
+                  {t('member.lastName')} *
                 </label>
                 <input
                   type="text"
@@ -130,7 +132,7 @@ const AddMember = () => {
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  placeholder="Enter last name"
+                  placeholder={t('member.enterLastName')}
                   className="form-input"
                   required
                 />
@@ -140,7 +142,7 @@ const AddMember = () => {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="gender" className="form-label">
-                  Gender
+                  {t('member.gender')}
                 </label>
                 <select
                   id="gender"
@@ -149,10 +151,10 @@ const AddMember = () => {
                   onChange={handleChange}
                   className="form-input"
                 >
-                  <option value="">Select gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
+                  <option value="">{t('member.selectGender')}</option>
+                  <option value="male">{t('member.male')}</option>
+                  <option value="female">{t('member.female')}</option>
+                  <option value="other">{t('member.other')}</option>
                 </select>
               </div>
 

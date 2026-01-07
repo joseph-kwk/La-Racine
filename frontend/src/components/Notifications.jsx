@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Notifications = () => {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,7 +44,7 @@ const Notifications = () => {
       <div className="dashboard-container">
         <div className="empty-state">
           <div className="empty-state-icon">⏳</div>
-          <p className="empty-state-text">Loading notifications...</p>
+          <p className="empty-state-text">{t('messages.loadingData')}</p>
         </div>
       </div>
     );
@@ -64,14 +66,14 @@ const Notifications = () => {
       <nav className="nav-header">
         <div className="nav-content">
           <div className="nav-brand">
-            <h1>🔔 Notifications</h1>
+            <h1>🔔 {t('notifications.title')}</h1>
             <span className="nav-welcome">
-              {notifications.length} notification{notifications.length !== 1 ? 's' : ''}
+              {notifications.length} {t('notifications.title').toLowerCase()}
             </span>
           </div>
           <div className="nav-actions">
             <Link to="/dashboard" className="btn btn-secondary">
-              Back to Dashboard
+              {t('common.back')}
             </Link>
           </div>
         </div>
@@ -85,10 +87,10 @@ const Notifications = () => {
             <div className="empty-state">
               <div className="empty-state-icon">🔔</div>
               <p className="empty-state-text">
-                No notifications yet. Add family members to start receiving updates!
+                {t('notifications.noNotifications')}
               </p>
               <Link to="/trees" className="btn btn-primary mt-4">
-                View Trees
+                {t('dashboard.familyTrees')}
               </Link>
             </div>
           ) : (

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { treeAPI } from '../services/api';
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   // Auth state used via global Header; no local auth usage here
   const [trees, setTrees] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -13,13 +15,13 @@ const Dashboard = () => {
 
   // Tree type definitions for enhanced categorization
   const treeTypeOptions = [
-    { value: 'all', label: 'All Trees', icon: '🌳', description: 'View all family trees' },
-    { value: 'primary', label: 'Primary Family', icon: '🏠', description: 'Main nuclear family' },
-    { value: 'maternal', label: 'Maternal Line', icon: '👩', description: "Mother's side ancestry" },
-    { value: 'paternal', label: 'Paternal Line', icon: '👨', description: "Father's side ancestry" },
-    { value: 'extended', label: 'Extended Family', icon: '👨‍👩‍👧‍👦', description: 'Cousins, aunts, uncles' },
-    { value: 'adopted', label: 'Adopted Family', icon: '💝', description: 'Adopted family connections' },
-    { value: 'step', label: 'Step Family', icon: '👫', description: 'Step-parent family lines' },
+    { value: 'all', label: t('treeTypes.allTrees'), icon: '🌳', description: t('treeTypes.viewAllTrees') },
+    { value: 'primary', label: t('treeTypes.primaryFamily'), icon: '🏠', description: t('treeTypes.mainNuclearFamily') },
+    { value: 'maternal', label: t('treeTypes.maternalLine'), icon: '👩', description: t('treeTypes.mothersSide') },
+    { value: 'paternal', label: t('treeTypes.paternalLine'), icon: '👨', description: t('treeTypes.fathersSide') },
+    { value: 'extended', label: t('treeTypes.extendedFamily'), icon: '👨‍👩‍👧‍👦', description: t('treeTypes.cousinsAuntsUncles') },
+    { value: 'adopted', label: t('treeTypes.adoptedFamily'), icon: '💝', description: t('treeTypes.adoptedConnections') },
+    { value: 'step', label: t('treeTypes.stepFamily'), icon: '👫', description: t('treeTypes.stepParentLines') },
   ];
 
   useEffect(() => {
@@ -85,7 +87,7 @@ const Dashboard = () => {
       <div className="dashboard-container">
         <div className="empty-state">
           <div className="empty-state-icon">⏳</div>
-          <p className="empty-state-text">Loading dashboard...</p>
+          <p className="empty-state-text">{t('dashboard.loadingDashboard')}</p>
         </div>
       </div>
     );
@@ -101,25 +103,25 @@ const Dashboard = () => {
           className={`nav-tab ${activeView === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveView('overview')}
         >
-          📊 Overview
+          📊 {t('dashboard.overview')}
         </button>
         <button 
           className={`nav-tab ${activeView === 'trees' ? 'active' : ''}`}
           onClick={() => setActiveView('trees')}
         >
-          🌳 Family Trees
+          🌳 {t('dashboard.familyTrees')}
         </button>
         <button 
           className={`nav-tab ${activeView === 'members' ? 'active' : ''}`}
           onClick={() => setActiveView('members')}
         >
-          👥 Members
+          👥 {t('dashboard.members')}
         </button>
         <button 
           className={`nav-tab ${activeView === 'updates' ? 'active' : ''}`}
           onClick={() => setActiveView('updates')}
         >
-          📰 Updates
+          📰 {t('dashboard.updates')}
         </button>
       </nav>
 
@@ -136,13 +138,13 @@ const Dashboard = () => {
           <div className="overview-content">
             {/* Enhanced Statistics */}
             <section className="dashboard-section">
-              <h2 className="section-title">Family Statistics</h2>
+              <h2 className="section-title">{t('dashboard.familyStatistics')}</h2>
               <div className="stats-grid enhanced-stats">
                 <div className="stat-card stat-primary">
                   <div className="stat-icon">🌳</div>
                   <div className="stat-content">
                     <div className="stat-number">{trees.length}</div>
-                    <div className="stat-label">Family Trees</div>
+                    <div className="stat-label">{t('dashboard.familyTrees')}</div>
                   </div>
                 </div>
                 <div className="stat-card stat-secondary">
@@ -151,7 +153,7 @@ const Dashboard = () => {
                     <div className="stat-number">
                       {trees.reduce((total, tree) => total + (tree.member_count || 0), 0)}
                     </div>
-                    <div className="stat-label">Total Members</div>
+                    <div className="stat-label">{t('dashboard.totalMembers')}</div>
                   </div>
                 </div>
                 <div className="stat-card stat-accent">
@@ -160,7 +162,7 @@ const Dashboard = () => {
                     <div className="stat-number">
                       {trees.filter(tree => tree.role === 'owner').length}
                     </div>
-                    <div className="stat-label">Trees Owned</div>
+                    <div className="stat-label">{t('dashboard.treesOwned')}</div>
                   </div>
                 </div>
                 <div className="stat-card stat-info">
@@ -169,7 +171,7 @@ const Dashboard = () => {
                     <div className="stat-number">
                       {trees.reduce((total, tree) => total + (tree.relationship_count || 0), 0)}
                     </div>
-                    <div className="stat-label">Relationships</div>
+                    <div className="stat-label">{t('dashboard.relationships')}</div>
                   </div>
                 </div>
               </div>
@@ -177,27 +179,27 @@ const Dashboard = () => {
 
             {/* Quick Actions */}
             <section className="dashboard-section">
-              <h2 className="section-title">Quick Actions</h2>
+              <h2 className="section-title">{t('dashboard.quickActions')}</h2>
               <div className="action-grid enhanced-actions">
                 <Link to="/trees/new" className="action-card action-card-primary">
                   <div className="action-icon">🌳</div>
-                  <h3>Create New Tree</h3>
-                  <p>Start a new family tree branch</p>
+                  <h3>{t('dashboard.createNewTree')}</h3>
+                  <p>{t('dashboard.startNewBranch')}</p>
                 </Link>
                 <div className="action-card action-card-secondary" onClick={() => setActiveView('trees')}>
                   <div className="action-icon">👥</div>
-                  <h3>Add Family Member</h3>
-                  <p>Add relatives to existing trees</p>
+                  <h3>{t('dashboard.addFamilyMember')}</h3>
+                  <p>{t('dashboard.addRelatives')}</p>
                 </div>
                 <div className="action-card action-card-accent" onClick={() => setActiveView('updates')}>
                   <div className="action-icon">📸</div>
-                  <h3>Share Update</h3>
-                  <p>Post family news and photos</p>
+                  <h3>{t('dashboard.shareUpdate')}</h3>
+                  <p>{t('dashboard.postFamilyNews')}</p>
                 </div>
                 <Link to="/trees" className="action-card action-card-info">
                   <div className="action-icon">📊</div>
-                  <h3>View Analytics</h3>
-                  <p>Family insights and patterns</p>
+                  <h3>{t('dashboard.viewAnalytics')}</h3>
+                  <p>{t('dashboard.familyInsights')}</p>
                 </Link>
               </div>
             </section>
@@ -206,9 +208,9 @@ const Dashboard = () => {
             {notifications.length > 0 && (
               <section className="dashboard-section">
                 <div className="section-header">
-                  <h2 className="section-title">Recent Notifications</h2>
+                  <h2 className="section-title">{t('dashboard.recentNotifications')}</h2>
                   <Link to="/notifications" className="btn btn-outline">
-                    View All
+                    {t('dashboard.viewAll')}
                   </Link>
                 </div>
                 <div className="notifications-preview">
@@ -238,7 +240,7 @@ const Dashboard = () => {
 
             {/* Recent Activity */}
             <section className="dashboard-section">
-              <h2 className="section-title">Recent Activity</h2>
+              <h2 className="section-title">{t('dashboard.recentActivity')}</h2>
               <div className="activity-feed">
                 <div className="activity-item">
                   <div className="activity-icon">👶</div>
@@ -271,9 +273,9 @@ const Dashboard = () => {
           <div className="trees-content">
             <section className="dashboard-section">
               <div className="section-header">
-                <h2 className="section-title">Your Family Trees</h2>
+                <h2 className="section-title">{t('dashboard.yourFamilyTrees')}</h2>
                 <Link to="/trees/new" className="btn btn-primary">
-                  + Create New Tree
+                  {t('dashboard.createNewTreeBtn')}
                 </Link>
               </div>
 
@@ -300,16 +302,16 @@ const Dashboard = () => {
                 <div className="empty-state">
                   <div className="empty-state-icon">🌳</div>
                   <h3 className="empty-state-title">
-                    {selectedTreeType === 'all' ? 'No Family Trees Yet' : `No ${treeTypeOptions.find(opt => opt.value === selectedTreeType)?.label} Trees`}
+                    {selectedTreeType === 'all' ? t('dashboard.noTreesYet') : `No ${treeTypeOptions.find(opt => opt.value === selectedTreeType)?.label} Trees`}
                   </h3>
                   <p className="empty-state-text">
                     {selectedTreeType === 'all' 
-                      ? 'Create your first family tree to get started'
+                      ? t('dashboard.createFirstTree')
                       : `Create a ${treeTypeOptions.find(opt => opt.value === selectedTreeType)?.label.toLowerCase()} tree`
                     }
                   </p>
                   <Link to="/trees/new" className="btn btn-primary">
-                    Create Your First Tree
+                    {t('dashboard.createYourFirstTree')}
                   </Link>
                 </div>
               ) : (

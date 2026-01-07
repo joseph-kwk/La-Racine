@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Register = () => {
+  const { t } = useTranslation();
   const [userData, setUserData] = useState({ 
     username: '', 
     email: '', 
@@ -55,7 +57,7 @@ const Register = () => {
         <div className="text-center mb-6">
           <img src="/logo.png" alt="La Racine Logo" className="login-logo" />
           <h2 className="text-3xl font-extrabold text-gray-900 mt-4">
-            Create your La Racine account
+            {t('auth.createAccount')}
           </h2>
         </div>
         <form className="mt-8" onSubmit={handleSubmit}>
@@ -69,7 +71,7 @@ const Register = () => {
               type="text"
               required
               className="form-input"
-              placeholder="Username"
+              placeholder={t('auth.username')}
               value={userData.username}
               onChange={(e) => setUserData({...userData, username: e.target.value})}
             />
@@ -79,7 +81,7 @@ const Register = () => {
               type="email"
               required
               className="form-input"
-              placeholder="Email address"
+              placeholder={t('auth.email')}
               value={userData.email}
               onChange={(e) => setUserData({...userData, email: e.target.value})}
             />
@@ -89,7 +91,7 @@ const Register = () => {
               type="password"
               required
               className="form-input"
-              placeholder="Password"
+              placeholder={t('auth.password')}
               value={userData.password}
               onChange={(e) => setUserData({...userData, password: e.target.value})}
             />
@@ -100,12 +102,12 @@ const Register = () => {
               disabled={loading}
               className="btn btn-primary w-full"
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? `🌀 ${t('auth.signingIn')}` : `🚀 ${t('auth.createAccount')}`}
             </button>
           </div>
           <div className="text-center mt-6">
             <Link to="/login" className="link font-medium">
-              Already have an account? Sign in
+              {t('auth.alreadyHaveAccount')} {t('auth.signIn')}
             </Link>
           </div>
         </form>

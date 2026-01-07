@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -7,6 +8,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -18,7 +20,7 @@ const Login = () => {
     if (result.success) {
       navigate('/dashboard', { replace: true });
     } else {
-      setError(result.error.detail || 'Login failed');
+      setError(result.error.detail || t('auth.loginFailed'));
     }
     
     setLoading(false);
@@ -30,7 +32,7 @@ const Login = () => {
         <div className="text-center mb-6">
           <img src="/logo.png" alt="La Racine Logo" className="login-logo" />
           <h2 className="text-3xl font-extrabold text-gray-900 mt-4">
-            Sign in to La Racine
+            {t('auth.signInToAccount')}
           </h2>
         </div>
         <form className="mt-8" onSubmit={handleSubmit}>
@@ -44,7 +46,7 @@ const Login = () => {
               type="text"
               required
               className="form-input"
-              placeholder="Username"
+              placeholder={t('auth.username')}
               value={credentials.username}
               onChange={(e) => setCredentials({...credentials, username: e.target.value})}
             />
@@ -54,7 +56,7 @@ const Login = () => {
               type="password"
               required
               className="form-input"
-              placeholder="Password"
+              placeholder={t('auth.password')}
               value={credentials.password}
               onChange={(e) => setCredentials({...credentials, password: e.target.value})}
             />
@@ -65,12 +67,12 @@ const Login = () => {
               disabled={loading}
               className="btn btn-primary w-full"
             >
-              {loading ? '🌀 Signing in...' : '🚀 Sign in'}
+              {loading ? `🌀 ${t('auth.signingIn')}` : `🚀 ${t('auth.signIn')}`}
             </button>
           </div>
           <div className="text-center">
             <Link to="/register" className="link">
-              Don't have an account? ✨ Sign up
+              {t('auth.dontHaveAccount')} ✨ {t('auth.signUp')}
             </Link>
           </div>
         </form>

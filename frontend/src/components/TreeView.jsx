@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import FamilyTree from './FamilyTree';
 
 const TreeView = () => {
+  const { t } = useTranslation();
   const { treeId } = useParams();
   const [tree, setTree] = useState(null);
   const [members, setMembers] = useState([]);
@@ -85,7 +87,7 @@ const TreeView = () => {
       <div className="dashboard-container">
         <div className="empty-state">
           <div className="empty-state-icon">⏳</div>
-          <p className="empty-state-text">Loading family tree...</p>
+          <p className="empty-state-text">{t('messages.loadingData')}</p>
         </div>
       </div>
     );
@@ -96,7 +98,7 @@ const TreeView = () => {
       <div className="dashboard-container">
         <div className="empty-state">
           <div className="empty-state-icon">❌</div>
-          <p className="empty-state-text">{error || 'Tree not found'}</p>
+          <p className="empty-state-text">{error || t('messages.errorOccurred')}</p>
           <Link to="/trees" className="btn btn-primary mt-4">
             Back to Trees
           </Link>

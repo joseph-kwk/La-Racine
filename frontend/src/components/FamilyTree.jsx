@@ -10,6 +10,7 @@ import {
   Panel,
 } from '@xyflow/react';
 import { Tooltip } from 'react-tooltip';
+import { useTranslation } from 'react-i18next';
 import dagre from '@dagrejs/dagre';
 import '@xyflow/react/dist/style.css';
 
@@ -269,6 +270,7 @@ const buildFamilyBranches = (members) => {
 };
 
 const FamilyTree = ({ members, onMemberClick }) => {
+  const { t } = useTranslation();
   const [viewMode, setViewMode] = useState('normal');
 
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
@@ -387,11 +389,11 @@ const FamilyTree = ({ members, onMemberClick }) => {
               onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
               onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
             >
-              {viewMode === 'normal' ? '🌳 Switch to Hierarchical View' : '👥 Switch to Normal View'}
+              {viewMode === 'normal' ? t('visualization.hierarchicalView') : t('visualization.normalView')}
             </button>
             {viewMode === 'hierarchical' && (
               <div style={{ marginTop: '8px', fontSize: '12px', color: '#6b7280' }}>
-                Different colors = Different family branches
+                {t('visualization.differentColorsBranches')}
               </div>
             )}
           </div>

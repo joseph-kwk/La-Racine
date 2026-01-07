@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { useAuth } from './hooks/useAuth';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -93,13 +94,15 @@ function AppRoutes() {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <Header />
-          <LoadingBar />
-          <AppRoutes />
-        </Router>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <Router>
+            <Header />
+            <LoadingBar />
+            <AppRoutes />
+          </Router>
+        </AuthProvider>
+      </LanguageProvider>
     </ErrorBoundary>
   );
 }

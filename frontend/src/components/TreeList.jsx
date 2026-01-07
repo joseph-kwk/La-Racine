@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 
 const TreeList = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [trees, setTrees] = useState([]);
@@ -65,18 +67,18 @@ const TreeList = () => {
       <nav className="nav-header">
         <div className="nav-content">
           <div className="nav-brand">
-            <h1>🌳 La Racine</h1>
+            <h1>🌳 {t('common.laRacine')}</h1>
             <span className="nav-welcome">
-              Welcome, {user?.username}!
+              {t('common.welcome')}, {user?.username}!
             </span>
           </div>
           
           <div className="nav-actions">
             <Link to="/trees/new" className="btn btn-primary">
-              Create New Tree
+              {t('dashboard.createNewTree')}
             </Link>
             <button onClick={() => navigate('/dashboard')} className="btn btn-secondary">
-              Back to Dashboard
+              {t('common.back')}
             </button>
           </div>
         </div>
@@ -86,10 +88,10 @@ const TreeList = () => {
       <main className="dashboard-main">
         <div className="welcome-section">
           <h2 className="welcome-title">
-            🌲 Your Family Trees
+            🌲 {t('dashboard.yourFamilyTrees')}
           </h2>
           <p className="welcome-description">
-            Manage and explore your family trees. Click on a tree to view and edit its members.
+            {t('dashboard.yourFamilyTrees')}
           </p>
 
           {error && (

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 const CreateTree = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -58,15 +60,15 @@ const CreateTree = () => {
       <nav className="nav-header">
         <div className="nav-content">
           <div className="nav-brand">
-            <h1>🌳 La Racine</h1>
+            <h1>🌳 {t('common.laRacine')}</h1>
             <span className="nav-welcome">
-              Welcome, {user?.username}!
+              {t('common.welcome')}, {user?.username}!
             </span>
           </div>
           
           <div className="nav-actions">
             <button onClick={() => navigate('/dashboard')} className="btn-primary">
-              Back to Dashboard
+              {t('common.back')}
             </button>
           </div>
         </div>
@@ -76,10 +78,10 @@ const CreateTree = () => {
       <main className="dashboard-main">
         <div className="welcome-section">
           <h2 className="welcome-title">
-            ➕ Create New Family Tree
+            ➕ {t('dashboard.createNewTree')}
           </h2>
           <p className="welcome-description">
-            Start building your family history by creating a new family tree.
+            {t('dashboard.startNewBranch')}
           </p>
 
           {error && (
@@ -91,7 +93,7 @@ const CreateTree = () => {
           <form onSubmit={handleSubmit} className="form">
             <div className="form-group">
               <label htmlFor="name" className="form-label">
-                Tree Name *
+                {t('tree.name')} *
               </label>
               <input
                 type="text"
