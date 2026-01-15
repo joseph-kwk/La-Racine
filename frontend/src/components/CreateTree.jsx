@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { treeAPI } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -27,28 +28,14 @@ const CreateTree = () => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://127.0.0.1:8000/api/trees/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description
-        })
+      const response = await treeAPI.createTree({
+        name: formData.name,
+        description: formData.description
       });
 
-      if (response.ok) {
-        const treeData = await response.json();
-        navigate(`/trees/${treeData.id}`);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Failed to create tree');
-      }
-    } catch {
-      setError('Network error. Please try again.');
+      navigate(`/trees/${response.data.id}`);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to create tree');
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +52,7 @@ const CreateTree = () => {
               {t('common.welcome')}, {user?.username}!
             </span>
           </div>
-          
+
           <div className="nav-actions">
             <button onClick={() => navigate('/dashboard')} className="btn-primary">
               {t('common.back')}

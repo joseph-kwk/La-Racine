@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { treeAPI, memberAPI } from '../services/api';
 import FamilyTree from './FamilyTree';
 
 const TreeView = () => {
   const { t } = useTranslation();
   const { treeId } = useParams();
+  const navigate = useNavigate();
   const [tree, setTree] = useState(null);
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,33 +18,14 @@ const TreeView = () => {
     const fetchTreeData = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        
-        // Fetch tree details
-        const treeResponse = await fetch(`http://127.0.0.1:8000/api/trees/${treeId}/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
 
-        if (treeResponse.ok) {
-          const treeData = await treeResponse.json();
-          setTree(treeData);
-        } else {
-          setError('Tree not found');
-          return;
-        }
+        // Fetch tree details
+        const treeResponse = await treeAPI.getTree(treeId);
+        setTree(treeResponse.data);
 
         // Fetch tree members
-        const membersResponse = await fetch(`http://127.0.0.1:8000/api/trees/${treeId}/members/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (membersResponse.ok) {
-          const membersData = await membersResponse.json();
-          setMembers(membersData);
-        }
+        const membersResponse = await treeAPI.getTreeMembers(treeId);
+        setMembers(membersResponse.data);
       } catch {
         setError('Network error. Please try again.');
       } finally {
@@ -55,7 +38,7 @@ const TreeView = () => {
 
   const handleMemberClick = (member) => {
     // Navigate to edit page or show modal
-    window.location.href = `/trees/${treeId}/members/${member.id}/edit`;
+    navigate(`/trees/${treeId}/members/${member.id}/edit`);
   };
 
   const handleDeleteMember = async (memberId, memberName) => {
@@ -64,19 +47,8 @@ const TreeView = () => {
     }
 
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`http://127.0.0.1:8000/api/members/${memberId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        setMembers(members.filter(member => member.id !== memberId));
-      } else {
-        setError('Failed to remove member');
-      }
+      await memberAPI.deleteMember(memberId);
+      setMembers(members.filter(member => member.id !== memberId));
     } catch {
       setError('Network error. Please try again.');
     }
@@ -118,7 +90,7 @@ const TreeView = () => {
               {members.length} member{members.length !== 1 ? 's' : ''}
             </span>
           </div>
-          
+
           <div className="nav-actions">
             <Link to={`/trees/${treeId}/members/new`} className="btn btn-primary">
               Add Member
@@ -187,7 +159,7 @@ const TreeView = () => {
                       {member.first_name} {member.last_name}
                     </h3>
                     <div className="member-card-actions">
-                      <Link 
+                      <Link
                         to={`/trees/${treeId}/members/${member.id}/edit`}
                         className="btn btn-primary btn-sm"
                       >
@@ -201,7 +173,7 @@ const TreeView = () => {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="member-card-details">
                     {member.birth_date && (
                       <p className="member-detail">
@@ -224,7 +196,7 @@ const TreeView = () => {
                       </p>
                     )}
                   </div>
-                  
+
                   {member.notes && (
                     <div className="member-card-notes">
                       <strong>Notes:</strong>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { memberAPI } from '../services/api';
 import { useTranslation } from 'react-i18next';
 
 const AddMember = () => {
@@ -31,8 +32,6 @@ const AddMember = () => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('access_token');
-      
       // Prepare data (remove empty values)
       const memberData = {
         tree: parseInt(treeId),
@@ -46,23 +45,10 @@ const AddMember = () => {
       if (formData.relationship) memberData.relationship = formData.relationship;
       if (formData.notes) memberData.notes = formData.notes;
 
-      const response = await fetch('http://127.0.0.1:8000/api/members/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(memberData)
-      });
-
-      if (response.ok) {
-        navigate(`/trees/${treeId}`);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Failed to add member');
-      }
-    } catch {
-      setError('Network error. Please try again.');
+      await memberAPI.createMember(memberData);
+      navigate(`/trees/${treeId}`);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to add member');
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +65,7 @@ const AddMember = () => {
               Add Family Member
             </span>
           </div>
-          
+
           <div className="nav-actions">
             <button onClick={() => navigate(`/trees/${treeId}`)} className="btn btn-secondary">
               Back to Tree

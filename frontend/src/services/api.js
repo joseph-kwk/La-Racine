@@ -109,6 +109,7 @@ export const treeAPI = {
   createTree: (treeData) => api.post('/trees/', treeData),
   updateTree: (id, treeData) => api.put(`/trees/${id}/`, treeData),
   deleteTree: (id) => api.delete(`/trees/${id}/`),
+  getTreeMembers: (id) => api.get(`/trees/${id}/members/`),
 };
 
 // Family Members API
@@ -124,6 +125,13 @@ export const memberAPI = {
 export const notificationAPI = {
   getAllNotifications: () => api.get('/notifications/'),
   markAsRead: (id) => api.put(`/notifications/${id}/`, { read: true }),
+};
+
+// Updates API
+export const updateAPI = {
+  getAllUpdates: () => api.get('/updates/'),
+  createUpdate: (updateData) => api.post('/updates/', updateData),
+  deleteUpdate: (id) => api.delete(`/updates/${id}/`),
 };
 
 export default api;

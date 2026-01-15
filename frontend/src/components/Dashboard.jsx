@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { treeAPI } from '../services/api';
+import DashboardMembers from './DashboardMembers';
+import DashboardUpdates from './DashboardUpdates';
 
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -60,12 +62,12 @@ const Dashboard = () => {
 
   // Header handles logout globally
 
-  const filteredTrees = selectedTreeType === 'all' 
-    ? trees 
+  const filteredTrees = selectedTreeType === 'all'
+    ? trees
     : trees.filter(tree => tree.tree_type === selectedTreeType);
 
   const getRoleIcon = (role) => {
-    switch(role) {
+    switch (role) {
       case 'owner': return '👑';
       case 'editor': return '✏️';
       case 'viewer': return '👁️';
@@ -95,29 +97,29 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-  {/* Global header is rendered in App */}
+      {/* Global header is rendered in App */}
 
       {/* Navigation Tabs */}
       <nav className="dashboard-nav">
-        <button 
+        <button
           className={`nav-tab ${activeView === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveView('overview')}
         >
           📊 {t('dashboard.overview')}
         </button>
-        <button 
+        <button
           className={`nav-tab ${activeView === 'trees' ? 'active' : ''}`}
           onClick={() => setActiveView('trees')}
         >
           🌳 {t('dashboard.familyTrees')}
         </button>
-        <button 
+        <button
           className={`nav-tab ${activeView === 'members' ? 'active' : ''}`}
           onClick={() => setActiveView('members')}
         >
           👥 {t('dashboard.members')}
         </button>
-        <button 
+        <button
           className={`nav-tab ${activeView === 'updates' ? 'active' : ''}`}
           onClick={() => setActiveView('updates')}
         >
@@ -305,7 +307,7 @@ const Dashboard = () => {
                     {selectedTreeType === 'all' ? t('dashboard.noTreesYet') : `No ${treeTypeOptions.find(opt => opt.value === selectedTreeType)?.label} Trees`}
                   </h3>
                   <p className="empty-state-text">
-                    {selectedTreeType === 'all' 
+                    {selectedTreeType === 'all'
                       ? t('dashboard.createFirstTree')
                       : `Create a ${treeTypeOptions.find(opt => opt.value === selectedTreeType)?.label.toLowerCase()} tree`
                     }
@@ -327,11 +329,11 @@ const Dashboard = () => {
                           {getRoleIcon(tree.role)} {tree.role}
                         </div>
                       </div>
-                      
+
                       <p className="tree-card-description">
                         {tree.description || 'No description available'}
                       </p>
-                      
+
                       <div className="tree-stats">
                         <div className="tree-stat">
                           <span className="stat-number">{tree.member_count || 0}</span>
@@ -344,15 +346,15 @@ const Dashboard = () => {
                       </div>
 
                       <div className="tree-card-actions">
-                        <Link 
-                          to={`/tree/${tree.id}`} 
+                        <Link
+                          to={`/tree/${tree.id}`}
                           className="btn btn-primary btn-sm"
                         >
                           🌳 View Tree
                         </Link>
                         {(tree.role === 'owner' || tree.role === 'editor') && (
-                          <Link 
-                            to={`/trees/${tree.id}/members/new`} 
+                          <Link
+                            to={`/trees/${tree.id}/members/new`}
                             className="btn btn-outline btn-sm"
                           >
                             ✏️ Add Member
@@ -364,7 +366,7 @@ const Dashboard = () => {
                           </button>
                         )}
                       </div>
-                      
+
                       <div className="tree-card-footer">
                         <span className="tree-card-date">
                           Updated {new Date(tree.last_updated || tree.created_at).toLocaleDateString()}
@@ -380,58 +382,12 @@ const Dashboard = () => {
 
         {/* Members Tab */}
         {activeView === 'members' && (
-          <div className="members-content">
-            <section className="dashboard-section">
-              <div className="section-header">
-                <h2 className="section-title">Family Members</h2>
-                <button className="btn btn-primary">
-                  + Add Member
-                </button>
-              </div>
-              <div className="coming-soon">
-                <div className="coming-soon-icon">👥</div>
-                <h3>Member Management</h3>
-                <p>Search and manage family members across all your trees</p>
-                <div className="feature-preview">
-                  <ul>
-                    <li>🔍 Advanced member search and filtering</li>
-                    <li>🔗 Relationship mapping and visualization</li>
-                    <li>🔐 Privacy controls and consent management</li>
-                    <li>📊 Member analytics and insights</li>
-                  </ul>
-                </div>
-                <p className="feature-note">Feature coming soon in the next update!</p>
-              </div>
-            </section>
-          </div>
+          <DashboardMembers />
         )}
 
         {/* Updates Tab */}
         {activeView === 'updates' && (
-          <div className="updates-content">
-            <section className="dashboard-section">
-              <div className="section-header">
-                <h2 className="section-title">Family Updates</h2>
-                <button className="btn btn-primary">
-                  📝 New Update
-                </button>
-              </div>
-              <div className="coming-soon">
-                <div className="coming-soon-icon">📰</div>
-                <h3>Family News Feed</h3>
-                <p>Share updates, photos, and milestones with your family</p>
-                <div className="feature-preview">
-                  <ul>
-                    <li>📝 Family news and milestone posts</li>
-                    <li>📸 Photo sharing with tagging</li>
-                    <li>🎂 Birthday and anniversary reminders</li>
-                    <li>💬 Comments and family discussions</li>
-                  </ul>
-                </div>
-                <p className="feature-note">Feature coming soon in the next update!</p>
-              </div>
-            </section>
-          </div>
+          <DashboardUpdates />
         )}
       </main>
     </div>
