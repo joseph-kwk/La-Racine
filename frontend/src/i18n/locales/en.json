@@ -199,6 +199,11 @@
     "noResultsFound": "No results found",
     "loadingData": "Loading data...",
     "fetchingTrees": "Fetching trees...",
-    "fetchingMembers": "Fetching members..."
+    "fetchingMembers": "Fetching members...",
+    "noTimelineData": "No timeline data available. Add birth dates to members."
+  },
+  "timeline": {
+    "wasBorn": " was born",
+    "passedAway": " passed away"
   }
 }

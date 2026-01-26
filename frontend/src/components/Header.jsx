@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { currentLanguage, changeLanguage, languages } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
@@ -37,59 +39,72 @@ const Header = () => {
   };
 
   return (
-    <header className="dashboard-header">
-      <div className="header-content">
-        <div className="dashboard-brand">
+    <header className="nav-header">
+      <div className="nav-content">
+        <div className="nav-brand">
           <img src="/logo.png" alt="La Racine Logo" className="dashboard-logo" />
-          <div>
-            <Link to="/dashboard" className="link" style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Link to="/dashboard" className="link" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-dark)', textDecoration: 'none', border: 'none' }}>
               {t('common.laRacine')}
             </Link>
-            <p className="dashboard-subtitle">{t('header.familyTreeManagement')}</p>
+            <span className="dashboard-subtitle">{t('header.familyTreeManagement')}</span>
           </div>
         </div>
-      </div>
-      <div className="header-actions">
-        {/* Language Selector */}
-        <div className="language-selector-wrapper" ref={languageMenuRef}>
-          <button 
-            className="language-selector-btn"
-            onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-            aria-label="Select language"
+        <div className="header-actions">
+          {/* Theme Toggle */}
+          <button
+            className="btn btn-logout"
+            onClick={toggleTheme}
+            style={{ marginRight: '10px', background: 'transparent', border: '1px solid var(--gray-300)', padding: '6px 12px' }}
+            title={theme === 'fresh' ? "Switch to Cozy Mode" : "Switch to Fresh Mode"}
           >
-            <span className="language-flag">
-              {languages.find(l => l.code === currentLanguage)?.flag || '🌐'}
-            </span>
-            <span className="language-code">{currentLanguage.toUpperCase()}</span>
-            <span className="language-arrow">▼</span>
+            {theme === 'fresh' ? '☀️ Fresh' : '🍂 Cozy'}
           </button>
-          {showLanguageMenu && (
-            <div className="language-dropdown">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  className={`language-option ${currentLanguage === lang.code ? 'active' : ''}`}
-                  onClick={() => {
-                    changeLanguage(lang.code);
-                    setShowLanguageMenu(false);
-                  }}
-                >
-                  <span className="language-flag">{lang.flag}</span>
-                  <span className="language-name">{lang.name}</span>
-                  {currentLanguage === lang.code && <span className="language-check">✓</span>}
-                </button>
-              ))}
-            </div>
-          )}
+
+          {/* Language Selector */}
+          <div className="language-selector-wrapper" ref={languageMenuRef}>
+            <button
+              className="language-selector-btn"
+              onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+              aria-label="Select language"
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <span className="language-flag" style={{ fontSize: '1.4rem', lineHeight: '1', display: 'flex', alignItems: 'center' }}>
+                {languages.find(l => l.code === currentLanguage)?.flag || '🌐'}
+              </span>
+              <span className="language-code" style={{ fontSize: '0.9rem', fontWeight: 600 }}>{currentLanguage.toUpperCase()}</span>
+            </button>
+            {showLanguageMenu && (
+              <div className="language-dropdown" style={{ position: 'absolute', top: '100%', right: 0, background: 'white', padding: '8px', borderRadius: '12px', boxShadow: 'var(--shadow-lg)', zIndex: 100, display: 'flex', flexDirection: 'column', gap: '4px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    className={`language-option ${currentLanguage === lang.code ? 'active' : ''}`}
+                    onClick={() => {
+                      changeLanguage(lang.code);
+                      setShowLanguageMenu(false);
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: currentLanguage === lang.code ? 'var(--gray-50)' : 'transparent', borderRadius: '8px', cursor: 'pointer', width: '100%', textAlign: 'left' }}
+                  >
+                    <span className="language-flag">{lang.flag}</span>
+                    <span className="language-name" style={{ fontSize: '0.9rem' }}>{lang.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Link to="/notifications" className="btn btn-logout" style={{ background: 'white', color: 'var(--primary-dark)', borderColor: 'var(--gray-200)' }}>
+            🔔
+          </Link>
+          <div className="nav-welcome">
+            <span>👋</span>
+            <span style={{ fontWeight: 500 }}>{user?.username}</span>
+          </div>
+          <button onClick={handleLogout} className="btn btn-logout">
+            {t('auth.logout')}
+          </button>
         </div>
-        
-        <Link to="/notifications" className="btn btn-outline" style={{ marginRight: '10px' }}>
-          🔔 {t('header.notifications')}
-        </Link>
-        <span className="welcome-text">{t('header.welcome')}, {user?.username}</span>
-        <button onClick={handleLogout} className="btn btn-outline">
-          {t('auth.logout')}
-        </button>
       </div>
     </header>
   );

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { useAuth } from './hooks/useAuth';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -17,13 +18,13 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  
+
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
 const PublicRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  
+
   return !isAuthenticated ? children : <Navigate to="/dashboard" />;
 };
 
@@ -84,9 +85,9 @@ function AppRoutes() {
           <TreeView />
         </ProtectedRoute>
       } />
-  <Route path="/" element={<Navigate to="/dashboard" />} />
-  {/* Catch-all */}
-  <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
+      <Route path="/" element={<Navigate to="/dashboard" />} />
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
     </Routes>
   );
 }
@@ -96,11 +97,13 @@ function App() {
     <ErrorBoundary>
       <LanguageProvider>
         <AuthProvider>
-          <Router>
-            <Header />
-            <LoadingBar />
-            <AppRoutes />
-          </Router>
+          <ThemeProvider>
+            <Router>
+              <Header />
+              <LoadingBar />
+              <AppRoutes />
+            </Router>
+          </ThemeProvider>
         </AuthProvider>
       </LanguageProvider>
     </ErrorBoundary>

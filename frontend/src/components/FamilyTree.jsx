@@ -15,14 +15,12 @@ import dagre from '@dagrejs/dagre';
 import '@xyflow/react/dist/style.css';
 
 const FAMILY_COLORS = [
-  { primary: '#3b82f6', light: '#dbeafe', name: 'Blue' },
-  { primary: '#10b981', light: '#d1fae5', name: 'Green' },
-  { primary: '#f59e0b', light: '#fef3c7', name: 'Amber' },
-  { primary: '#8b5cf6', light: '#ede9fe', name: 'Purple' },
-  { primary: '#ec4899', light: '#fce7f3', name: 'Pink' },
-  { primary: '#06b6d4', light: '#cffafe', name: 'Cyan' },
-  { primary: '#ef4444', light: '#fee2e2', name: 'Red' },
-  { primary: '#14b8a6', light: '#ccfbf1', name: 'Teal' },
+  { primary: '#15803d', light: '#dcfce7', name: 'Forest' }, // emerald-700
+  { primary: '#d97706', light: '#fef3c7', name: 'Gold' },   // amber-600
+  { primary: '#0369a1', light: '#e0f2fe', name: 'Sky' },    // sky-700
+  { primary: '#7c3aed', light: '#ede9fe', name: 'Violet' }, // violet-600
+  { primary: '#be123c', light: '#ffe4e6', name: 'Rose' },   // rose-700
+  { primary: '#0f766e', light: '#ccfbf1', name: 'Teal' },   // teal-700
 ];
 
 const FamilyMemberNode = ({ data }) => {
@@ -41,144 +39,51 @@ const FamilyMemberNode = ({ data }) => {
     return member.death_date ? ` (${age})` : ` (${age})`;
   };
 
-  const getBorderColor = () => {
-    if (branchColor) return branchColor.primary;
-    return member.gender === 'male' ? '#3b82f6' : member.gender === 'female' ? '#ec4899' : '#6b7280';
-  };
-
-  const getBackgroundColor = () => {
-    if (member.photo) return 'transparent';
-    if (branchColor) return branchColor.light;
-    return member.gender === 'male' ? '#dbeafe' : member.gender === 'female' ? '#fce7f3' : '#f3f4f6';
-  };
-
-  const getInitialsColor = () => {
-    if (branchColor) return branchColor.primary;
-    return member.gender === 'male' ? '#3b82f6' : member.gender === 'female' ? '#ec4899' : '#6b7280';
-  };
+  const inlineStyle = branchColor ? {
+    borderColor: branchColor.primary,
+    backgroundColor: branchColor.light,
+    boxShadow: `0 4px 12px ${branchColor.primary}20`
+  } : {};
 
   return (
     <div
-      className={`family-member-node ${member.gender || 'other'}`}
+      className="family-node"
       onClick={() => onMemberClick(member)}
       data-tooltip-id={`member-tooltip-${member.id}`}
       data-tooltip-content={`${member.first_name} ${member.last_name}${member.nickname ? ` "${member.nickname}"` : ''}`}
-      style={{
-        padding: '12px',
-        borderRadius: '50%',
-        width: '140px',
-        height: '140px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        border: '3px solid',
-        borderColor: getBorderColor(),
-        backgroundColor: getBackgroundColor(),
-        boxShadow: branchColor 
-          ? `0 4px 6px -1px ${branchColor.primary}40` 
-          : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        transition: 'all 0.2s ease-in-out',
-        position: 'relative',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(1.05)';
-        e.currentTarget.style.boxShadow = branchColor
-          ? `0 10px 15px -3px ${branchColor.primary}60`
-          : '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'scale(1)';
-        e.currentTarget.style.boxShadow = branchColor
-          ? `0 4px 6px -1px ${branchColor.primary}40`
-          : '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-      }}
+      style={inlineStyle}
     >
       {member.photo ? (
         <img
           src={member.photo}
           alt={`${member.first_name} ${member.last_name}`}
-          style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            objectFit: 'cover',
-          }}
         />
       ) : (
         <div
-          style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            backgroundColor: getInitialsColor(),
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '28px',
-            fontWeight: 'bold',
-          }}
+          className="family-node-initials"
+          style={branchColor ? { backgroundColor: branchColor.primary } : {}}
         >
           {member.first_name[0]}{member.last_name[0]}
         </div>
       )}
-      <div
-        style={{
-          marginTop: '8px',
-          textAlign: 'center',
-          fontSize: '12px',
-          fontWeight: '600',
-          color: '#374151',
-          maxWidth: '120px',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}
-      >
+
+      <div className="family-node-name">
         {member.first_name} {member.last_name}
       </div>
-      <div
-        style={{
-          fontSize: '10px',
-          color: '#6b7280',
-          marginTop: '2px',
-        }}
-      >
+
+      <div className="family-node-dates">
         {formatDate(member.birth_date)} - {formatDate(member.death_date) || 'Present'}{getAge()}
       </div>
+
       {member.nickname && (
-        <div
-          style={{
-            fontSize: '10px',
-            color: '#9ca3af',
-            fontStyle: 'italic',
-            marginTop: '2px',
-          }}
-        >
+        <div className="family-node-nickname">
           "{member.nickname}"
         </div>
       )}
+
       {!member.is_alive && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '-5px',
-            right: '-5px',
-            width: '20px',
-            height: '20px',
-            borderRadius: '50%',
-            backgroundColor: '#ef4444',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-            color: 'white',
-            fontWeight: 'bold',
-          }}
-        >
-          †
+        <div className="family-node-deceased">
+          <span>†</span>
         </div>
       )}
     </div>
@@ -311,9 +216,9 @@ const FamilyTree = ({ members, onMemberClick }) => {
               source: parentId.toString(),
               target: member.id.toString(),
               type: 'smoothstep',
-              style: { 
-                stroke: parentColor ? parentColor.primary : '#6b7280', 
-                strokeWidth: viewMode === 'hierarchical' ? 3 : 2 
+              style: {
+                stroke: parentColor ? parentColor.primary : '#6b7280',
+                strokeWidth: viewMode === 'hierarchical' ? 3 : 2
               },
               animated: viewMode === 'hierarchical',
             });
@@ -330,10 +235,10 @@ const FamilyTree = ({ members, onMemberClick }) => {
             source: member.id.toString(),
             target: spouseId.toString(),
             type: 'smoothstep',
-            style: { 
-              stroke: spouseColor ? spouseColor.primary : '#ec4899', 
-              strokeWidth: 2, 
-              strokeDasharray: '5,5' 
+            style: {
+              stroke: spouseColor ? spouseColor.primary : '#ec4899',
+              strokeWidth: 2,
+              strokeDasharray: '5,5'
             },
           });
         }
@@ -370,7 +275,7 @@ const FamilyTree = ({ members, onMemberClick }) => {
         <Controls />
         <MiniMap />
         <Background variant="dots" gap={12} size={1} />
-        
+
         <Panel position="top-left">
           <div style={{ background: 'white', padding: '8px 16px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
             <button
@@ -399,7 +304,7 @@ const FamilyTree = ({ members, onMemberClick }) => {
           </div>
         </Panel>
       </ReactFlow>
-      
+
       {members.map(member => (
         <Tooltip
           key={member.id}

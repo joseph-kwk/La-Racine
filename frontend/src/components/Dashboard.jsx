@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { treeAPI } from '../services/api';
+import { treeAPI, notificationAPI } from '../services/api';
 import DashboardMembers from './DashboardMembers';
 import DashboardUpdates from './DashboardUpdates';
 
@@ -30,34 +30,28 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const { data } = await treeAPI.getAllTrees();
-        const enhancedTrees = data.map(tree => ({
-          ...tree,
-          tree_type: tree.tree_type || 'primary',
-          member_count: tree.member_count || Math.floor(Math.random() * 50) + 5,
-          role: tree.role || 'owner',
-          last_updated: tree.updated_at || tree.created_at,
-          relationship_count: tree.relationship_count || Math.floor(Math.random() * 100) + 10,
-        }));
-        setTrees(enhancedTrees);
-
-        // Fetch notifications
-        const token = localStorage.getItem('access_token');
-        const notificationsResponse = await fetch('http://127.0.0.1:8000/api/notifications/', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (notificationsResponse.ok) {
-          const notificationsData = await notificationsResponse.json();
-          setNotifications(notificationsData.slice(0, 5)); // Show only recent 5
-        }
-      } catch {
+        // Backend now provides all necessary fields including counts and roles
+        setTrees(data);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
         setError('Failed to fetch data');
       } finally {
         setLoading(false);
       }
     };
+
+    const fetchNotifications = async () => {
+      try {
+        // Use the dedicated notification API
+        const { data } = await notificationAPI.getAllNotifications();
+        setNotifications(data.slice(0, 5));
+      } catch (e) {
+        console.warn("Could not fetch notifications", e);
+      }
+    }
+
     fetchData();
+    fetchNotifications();
   }, []);
 
   // Header handles logout globally

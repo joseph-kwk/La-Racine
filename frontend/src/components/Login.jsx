@@ -22,43 +22,46 @@ const Login = () => {
     } else {
       setError(result.error.detail || t('auth.loginFailed'));
     }
-    
+
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-primary px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center dashboard-container px-4 py-12">
       <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="text-center mb-6">
-          <img src="/logo.png" alt="La Racine Logo" className="login-logo" />
-          <h2 className="text-3xl font-extrabold text-gray-900 mt-4">
+          <img src="/logo.png" alt="La Racine Logo" style={{ height: '80px', marginBottom: '1rem' }} />
+          <h2 className="welcome-title" style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
             {t('auth.signInToAccount')}
           </h2>
+          <p className="text-gray-600">{t('common.laRacine')}</p>
         </div>
         <form className="mt-8" onSubmit={handleSubmit}>
           {error && (
             <div className="error-message">
-              {error}
+              ⚠️ {error}
             </div>
           )}
-          <div className="mb-4">
+          <div className="form-group">
+            <label className="form-label">{t('auth.username')}</label>
             <input
               type="text"
               required
               className="form-input"
               placeholder={t('auth.username')}
               value={credentials.username}
-              onChange={(e) => setCredentials({...credentials, username: e.target.value})}
+              onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
             />
           </div>
-          <div className="mb-6">
+          <div className="form-group" style={{ marginBottom: '2rem' }}>
+            <label className="form-label">{t('auth.password')}</label>
             <input
               type="password"
               required
               className="form-input"
               placeholder={t('auth.password')}
               value={credentials.password}
-              onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+              onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
             />
           </div>
           <div className="mb-6">
@@ -66,13 +69,14 @@ const Login = () => {
               type="submit"
               disabled={loading}
               className="btn btn-primary w-full"
+              style={{ width: '100%', justifyContent: 'center' }}
             >
               {loading ? `🌀 ${t('auth.signingIn')}` : `🚀 ${t('auth.signIn')}`}
             </button>
           </div>
-          <div className="text-center">
+          <div className="text-center mt-4">
             <Link to="/register" className="link">
-              {t('auth.dontHaveAccount')} ✨ {t('auth.signUp')}
+              {t('auth.dontHaveAccount')} <span style={{ fontWeight: 'bold' }}>{t('auth.signUp')}</span>
             </Link>
           </div>
         </form>

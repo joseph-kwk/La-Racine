@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { treeAPI, memberAPI } from '../services/api';
 import FamilyTree from './FamilyTree';
+import Timeline from './Timeline';
 
 const TreeView = () => {
   const { t } = useTranslation();
@@ -135,6 +136,13 @@ const TreeView = () => {
               >
                 🌳 Tree View
               </button>
+              <button
+                className={`btn ${viewMode === 'timeline' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setViewMode('timeline')}
+                style={{ marginLeft: '10px' }}
+              >
+                ⏳ Timeline
+              </button>
             </div>
           )}
 
@@ -150,6 +158,8 @@ const TreeView = () => {
             </div>
           ) : viewMode === 'tree' ? (
             <FamilyTree members={members} onMemberClick={handleMemberClick} />
+          ) : viewMode === 'timeline' ? (
+            <Timeline members={members} onMemberClick={handleMemberClick} />
           ) : (
             <div className="members-grid">
               {members.map(member => (
