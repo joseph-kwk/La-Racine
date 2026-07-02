@@ -34,7 +34,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 # Install dependencies
-pip install -r backend/requirements.txt
+pip install -r requirements.txt
 
 # Run migrations
 python manage.py migrate
@@ -89,7 +89,7 @@ The application is now running locally. Happy coding! 🌳
 
 **Backend won't start:**
 - Make sure virtual environment is activated
-- Run `pip install -r backend/requirements.txt` again
+- Run `pip install -r requirements.txt` again
 
 **Frontend won't start:**
 - Delete `node_modules` and `package-lock.json`

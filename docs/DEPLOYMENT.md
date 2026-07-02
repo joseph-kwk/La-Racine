@@ -138,7 +138,7 @@ railway run python manage.py collectstatic --noinput
 1. Create account at [render.com](https://render.com)
 2. Create New Web Service
 3. Connect GitHub repository
-4. Build Command: `pip install -r backend/requirements.txt`
+4. Build Command: `pip install -r requirements.txt`
 5. Start Command: `gunicorn la_racine.wsgi:application`
 6. Add PostgreSQL database
 7. Set environment variables
@@ -152,7 +152,7 @@ railway run python manage.py collectstatic --noinput
 
 ## 🔧 Production Django Settings
 
-Add to `backend/requirements.txt`:
+Add to `requirements.txt`:
 ```
 gunicorn
 dj-database-url
@@ -161,7 +161,7 @@ whitenoise
 
 Install for production:
 ```bash
-pip install -r backend/requirements.txt
+pip install -r requirements.txt
 ```
 
 Update `settings.py` for production database:
