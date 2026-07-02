@@ -19,9 +19,18 @@ frontend/node_modules/
 frontend/dist/
 frontend/.env
 
+# Capacitor / Android (generated build output — regenerate with `npx cap sync`)
+frontend/android/
+frontend/.gradle/
+frontend/capacitor-build/
+
 # Logs
 *.log
 
 # OS
 .DS_Store
 Thumbs.db
+
+# JetBrains / Android Studio
+*.iml
+.idea/
