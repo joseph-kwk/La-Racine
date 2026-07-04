@@ -29,9 +29,9 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await treeAPI.getAllTrees();
-        // Backend now provides all necessary fields including counts and roles
-        setTrees(data);
+        const { data } = await treeAPI.getAll();
+        const treesData = data.results ?? data;
+        setTrees(treesData);
       } catch (err) {
         console.error("Dashboard fetch error:", err);
         setError('Failed to fetch data');
@@ -43,8 +43,9 @@ const Dashboard = () => {
     const fetchNotifications = async () => {
       try {
         // Use the dedicated notification API
-        const { data } = await notificationAPI.getAllNotifications();
-        setNotifications(data.slice(0, 5));
+        const { data } = await notificationAPI.getAll();
+        const list = data.results ?? data;
+        setNotifications(list.slice(0, 5));
       } catch (e) {
         console.warn("Could not fetch notifications", e);
       }

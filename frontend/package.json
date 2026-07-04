@@ -12,7 +12,7 @@
   "dependencies": {
     "@dagrejs/dagre": "^1.1.5",
     "@tailwindcss/postcss": "^4.1.18",
-    "@xyflow/react": "^12.8.2",
+    "@xyflow/react": "^12.11.1",
     "axios": "^1.11.0",
     "i18next": "^25.7.3",
     "i18next-browser-languagedetector": "^8.2.0",

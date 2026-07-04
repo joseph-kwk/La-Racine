@@ -23,7 +23,7 @@ const Register = () => {
     const result = await register(userData);
 
     if (result.success) {
-      navigate('/login');
+      navigate('/dashboard', { replace: true });
     } else {
       // Better error handling to show more specific error messages
       let errorMessage = 'Registration failed';

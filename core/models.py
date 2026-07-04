@@ -1,12 +1,133 @@
+"""
+core/models.py — User Profile & Account Extension
+
+Extends Django's built-in User model with:
+- Display preferences (name, avatar, language, timezone, theme)
+- Link to a FamilyMember record ("claiming" one's own profile)
+- Notification preferences
+- Account verification state
+"""
+
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    """Extended profile for every La Racine user account."""
+
+    THEME_CHOICES = [
+        ('system', 'Follow System'),
+        ('light',  'Light'),
+        ('dark',   'Dark'),
+    ]
+
+    LANGUAGE_CHOICES = [
+        ('en',    'English'),
+        ('fr',    'Français'),
+        ('es',    'Español'),
+        ('pt',    'Português'),
+        ('ar',    'العربية'),
+        ('sw',    'Kiswahili'),
+        ('zh',    '中文'),
+        ('hi',    'हिन्दी'),
+        ('de',    'Deutsch'),
+        ('it',    'Italiano'),
+        ('ja',    '日本語'),
+        ('ko',    '한국어'),
+    ]
+
+    DIGEST_CHOICES = [
+        ('instant', 'Instant'),
+        ('daily',   'Daily Digest'),
+        ('weekly',  'Weekly Digest'),
+        ('never',   'Never'),
+    ]
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name='profile'
+    )
+
+    # Display
+    display_name = models.CharField(
+        max_length=100, blank=True,
+        help_text='How your name appears to other family members'
+    )
     nickname = models.CharField(max_length=100, blank=True)
-    profile_photo = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    profile_photo = models.ImageField(
+        upload_to='profiles/', blank=True, null=True
+    )
+    bio = models.TextField(blank=True)
+
+    # Location & dates
     current_location = models.CharField(max_length=255, blank=True)
-    birthday = models.DateField(blank=True, null=True)
+    birthday = models.DateField(
+        blank=True, null=True,
+        help_text='Used for birthday notifications to other family members'
+    )
+
+    # Preferences
+    preferred_language = models.CharField(
+        max_length=10, choices=LANGUAGE_CHOICES, default='en'
+    )
+    timezone = models.CharField(
+        max_length=50, default='UTC',
+        help_text='IANA timezone string, e.g. America/New_York'
+    )
+    theme_preference = models.CharField(
+        max_length=10, choices=THEME_CHOICES, default='system'
+    )
+
+    # Link to the FamilyMember record this user "is"
+    # (set when user claims their profile in the tree)
+    linked_member = models.OneToOneField(
+        'tree.FamilyMember',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='claimed_by_profile',
+        help_text='The family member record this account belongs to'
+    )
+
+    # Account verification
+    is_email_verified = models.BooleanField(default=False)
+    is_phone_verified = models.BooleanField(default=False)
+    phone = models.CharField(max_length=30, blank=True)
+
+    # Notification preferences
+    notify_birthdays_email = models.BooleanField(default=True)
+    notify_birthdays_push = models.BooleanField(default=True)
+    notify_new_member_email = models.BooleanField(default=True)
+    notify_change_requests_email = models.BooleanField(default=True)
+    notify_photo_tags_email = models.BooleanField(default=True)
+    notify_invitations_email = models.BooleanField(default=True)
+    digest_frequency = models.CharField(
+        max_length=10, choices=DIGEST_CHOICES, default='instant'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
-        return self.nickname or self.user.username
+        return self.display_name or self.nickname or self.user.username
+
+    @property
+    def full_name(self):
+        return self.user.get_full_name() or self.display_name or self.user.username
+
+    class Meta:
+        verbose_name = 'User Profile'
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Automatically create a UserProfile for every new user."""
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Ensure the profile is saved when the user is saved."""
+    if hasattr(instance, 'profile'):
+        instance.profile.save()

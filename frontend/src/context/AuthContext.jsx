@@ -1,11 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { authAPI } from '../services/api';
+/**
+ * context/AuthContext.jsx
+ *
+ * Provides authentication state + the user's full profile (including linked
+ * family member, language preference, etc.) to the entire app.
+ */
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { authAPI, profileAPI } from '../services/api';
 import { AuthContext } from './auth';
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null);       // Django User object
+  const [profile, setProfile] = useState(null); // UserProfile object
   const [loading, setLoading] = useState(true);
 
+  /** Fetch the current user + profile from /api/auth/me/ */
+  const fetchMe = useCallback(async () => {
+    try {
+      const { data } = await authAPI.me();
+      setUser({
+        id: data.id,
+        username: data.username,
+        email: data.email,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        is_staff: data.is_staff,
+      });
+      setProfile(data.profile || null);
+    } catch {
+      setUser(null);
+      setProfile(null);
+    }
+  }, []);
+
+  /** Bootstrap: restore session from localStorage on app load */
   useEffect(() => {
     const init = async () => {
       const access = localStorage.getItem('access_token');
@@ -14,37 +42,18 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-      try {
-        const { data } = await authAPI.me();
-        setUser({ id: data.id, username: data.username, email: data.email });
-  } catch {
-        // If refresh failed in interceptor, tokens may be cleared; proceed logged out
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+      await fetchMe();
+      setLoading(false);
     };
     init();
-  }, []);
+  }, [fetchMe]);
 
   const login = async (credentials) => {
     try {
-      const response = await authAPI.login(credentials);
-      const { access, refresh } = response.data;
-      
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
-      
-      // Fetch user profile
-      try {
-        const { data } = await authAPI.me();
-        setUser({ id: data.id, username: data.username, email: data.email });
-      } catch {
-        // Fallback to token-only state if /me fails unexpectedly
-        setUser({ token: access });
-      }
+      const { data } = await authAPI.login(credentials);
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+      await fetchMe();
       return { success: true };
     } catch (error) {
       return { success: false, error: error.response?.data || 'Login failed' };
@@ -53,7 +62,18 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      await authAPI.register(userData);
+      const { data } = await authAPI.register(userData);
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+      setUser({
+        id: data.user.id,
+        username: data.user.username,
+        email: data.user.email,
+        first_name: data.user.first_name,
+        last_name: data.user.last_name,
+        is_staff: false,
+      });
+      setProfile(data.profile || null);
       return { success: true };
     } catch (error) {
       return { success: false, error: error.response?.data || 'Registration failed' };
@@ -64,14 +84,23 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setUser(null);
+    setProfile(null);
+  };
+
+  /** Update local profile state after a profile edit */
+  const updateProfile = (updatedProfile) => {
+    setProfile((prev) => ({ ...prev, ...updatedProfile }));
   };
 
   const value = {
     user,
+    profile,
     login,
     register,
     logout,
     loading,
+    updateProfile,
+    fetchMe,
     isAuthenticated: !!user,
   };
 

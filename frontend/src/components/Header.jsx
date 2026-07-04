@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import { useNotifications } from '../context/NotificationContext';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -9,6 +10,7 @@ const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { currentLanguage, changeLanguage, languages } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { unreadCount } = useNotifications();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
@@ -94,12 +96,26 @@ const Header = () => {
             )}
           </div>
 
-          <Link to="/notifications" className="btn btn-logout" style={{ background: 'white', color: 'var(--primary-dark)', borderColor: 'var(--gray-200)' }}>
+          <Link to="/notifications" className="btn btn-logout" style={{ background: 'white', color: 'var(--primary-dark)', borderColor: 'var(--gray-200)', position: 'relative' }}>
             🔔
+            {unreadCount > 0 && (
+              <span style={{
+                position: 'absolute', top: '-6px', right: '-6px',
+                background: '#ef4444', color: 'white', borderRadius: '50%',
+                fontSize: '0.65rem', fontWeight: 700,
+                width: '18px', height: '18px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              }}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </Link>
           <div className="nav-welcome">
             <span>👋</span>
-            <span style={{ fontWeight: 500 }}>{user?.username}</span>
+            <Link to="/account" style={{ fontWeight: 500, color: 'var(--primary-dark)', textDecoration: 'none' }}>
+              {user?.username}
+            </Link>
           </div>
           <button onClick={handleLogout} className="btn btn-logout">
             {t('auth.logout')}
