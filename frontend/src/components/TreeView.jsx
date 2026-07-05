@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import TreeThemeProvider from './TreeThemeProvider';
 import { treeAPI } from '../services/api';
 import FamilyTree from './FamilyTree';
 import Timeline from './Timeline';
@@ -98,42 +99,65 @@ const TreeView = () => {
 
   if (isLoading) {
     return (
-      <div className="tree-view__loading">
-        <div className="tree-view__loading-spinner">🌳</div>
-        <p>{t('messages.loadingData')}</p>
-      </div>
+      <TreeThemeProvider tree={null}>
+        <div className="tree-view__loading">
+          <div className="tree-view__loading-spinner">🌳</div>
+          <p>{t('messages.loadingData')}</p>
+        </div>
+      </TreeThemeProvider>
     );
   }
 
   if (error || !tree) {
     return (
-      <div className="tree-view__error">
-        <p>❌ {error || t('messages.errorOccurred')}</p>
-        <Link to="/trees" className="btn btn--primary">Back to Trees</Link>
-      </div>
+      <TreeThemeProvider tree={null}>
+        <div className="tree-view__error">
+          <p>❌ {error || t('messages.errorOccurred')}</p>
+          <Link to="/trees" className="btn btn--primary">Back to Trees</Link>
+        </div>
+      </TreeThemeProvider>
     );
   }
 
   return (
+    <TreeThemeProvider tree={tree}>
     <div className="tree-view">
-      {/* Page header */}
-      <div className="tree-view__header">
+      {/* Page header — uses family theme gradient */}
+      <div className="tree-view__header tree-view__header--themed">
         <div className="tree-view__header-info">
-          <Link to="/trees" className="tree-view__back">← My Trees</Link>
-          <h1 className="tree-view__title">🌳 {tree.name}</h1>
-          {tree.description && (
-            <p className="tree-view__desc">{tree.description}</p>
-          )}
+          <Link to="/trees" className="tree-view__back tree-view__back--on-dark">← My Trees</Link>
+
+          {/* Crest + Title row */}
+          <div className="tree-view__title-row">
+            {tree.crest_image && (
+              <div className="tree-view__crest-wrap">
+                <img src={tree.crest_image} alt="Family crest" className="tree-view__crest" />
+                {tree.crest_caption && (
+                  <p className="tree-view__crest-caption">{tree.crest_caption}</p>
+                )}
+              </div>
+            )}
+            <div>
+              <h1 className="tree-view__title tree-view__title--on-dark">🌳 {tree.name}</h1>
+              {tree.description && (
+                <p className="tree-view__desc tree-view__desc--on-dark">{tree.description}</p>
+              )}
+            </div>
+          </div>
+
           <div className="tree-view__meta">
-            <span className="tree-view__meta-item">👥 {members.length} member{members.length !== 1 ? 's' : ''}</span>
+            <span className="tree-view__meta-item tree-view__meta-item--on-dark">👥 {members.length} member{members.length !== 1 ? 's' : ''}</span>
             {tree.privacy_level && (
-              <span className="tree-view__meta-item">🔒 {tree.privacy_level}</span>
+              <span className="tree-view__meta-item tree-view__meta-item--on-dark">🔒 {tree.privacy_level}</span>
             )}
           </div>
         </div>
         <div className="tree-view__header-actions">
           <Link to={`/trees/${treeId}/members/new`} className="btn btn--primary">
             + Add Member
+          </Link>
+          <Link to={`/trees/${treeId}/settings`} className="btn btn--ghost-light">
+            ⚙️ Settings
           </Link>
         </div>
       </div>
@@ -192,6 +216,7 @@ const TreeView = () => {
         </div>
       )}
     </div>
+    </TreeThemeProvider>
   );
 };
 

@@ -64,6 +64,8 @@ class TreeSerializer(serializers.ModelSerializer):
     relationship_count = serializers.IntegerField(read_only=True, default=0)
     role = serializers.SerializerMethodField()
     created_by_username = serializers.CharField(source='created_by.username', read_only=True)
+    # Computed theme: merges preset defaults with any custom overrides
+    resolved_theme = serializers.SerializerMethodField()
 
     class Meta:
         model = Tree
@@ -72,14 +74,34 @@ class TreeSerializer(serializers.ModelSerializer):
             'require_approval_for_edits', 'allow_member_invites', 'primary_language',
             'created_by', 'created_by_username', 'created_at', 'updated_at',
             'member_count', 'relationship_count', 'role',
+            # Theme & identity
+            'theme_preset', 'theme_primary', 'theme_mid', 'theme_light', 'theme_dark',
+            'crest_image', 'crest_caption',
+            'resolved_theme',
         )
-        read_only_fields = ('id', 'created_by', 'created_by_username', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'created_by', 'created_by_username',
+                            'created_at', 'updated_at', 'resolved_theme')
 
     def get_role(self, obj):
         request = self.context.get('request')
         if not request:
             return None
         return get_user_tree_role(request.user, obj)
+
+    def get_resolved_theme(self, obj):
+        """
+        Returns the effective theme colors — custom fields take priority over preset defaults.
+        The frontend uses this so it never has to know preset defaults itself.
+        """
+        from .theme_presets import PRESET_MAP
+        preset = PRESET_MAP.get(obj.theme_preset or 'emerald_root', PRESET_MAP['emerald_root'])
+        return {
+            'primary': obj.theme_primary or preset['primary'],
+            'mid':     obj.theme_mid     or preset['mid'],
+            'light':   obj.theme_light   or preset['light'],
+            'dark':    obj.theme_dark    or preset['dark'],
+            'preset':  obj.theme_preset  or 'emerald_root',
+        }
 
 
 class TreePermissionSerializer(serializers.ModelSerializer):

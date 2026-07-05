@@ -121,6 +121,13 @@ export const treeAPI = {
   grantPermission: (treeId, data) => api.post(`/trees/${treeId}/permissions/grant/`, data),
   getUpdates: (treeId) => api.get(`/trees/${treeId}/updates/`),
   getPendingChanges: (treeId) => api.get(`/trees/${treeId}/pending_changes/`),
+
+  // Theme & identity
+  updateTheme: (treeId, data) => api.patch(`/trees/${treeId}/theme/`, data),
+  uploadCrest: (treeId, formData) => api.post(`/trees/${treeId}/crest/`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  getPresets: () => api.get('/trees/presets/'),
 };
 
 // ────────────────────────────────────────────────────────────────────────────

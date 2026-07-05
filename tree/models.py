@@ -133,6 +133,36 @@ class Tree(models.Model):
         help_text='BCP 47 language tag for the primary data language'
     )
 
+    # ── Family Identity: Theme & Crest ───────────────────────────────────────
+    theme_preset = models.CharField(
+        max_length=60, default='emerald_root', blank=True,
+        help_text='Slug of the chosen preset palette (e.g. "savanna_gold")'
+    )
+    theme_primary = models.CharField(
+        max_length=7, blank=True,
+        help_text='Primary hex color, e.g. #15803d'
+    )
+    theme_mid = models.CharField(
+        max_length=7, blank=True,
+        help_text='Mid-tone hex color for gradients'
+    )
+    theme_light = models.CharField(
+        max_length=7, blank=True,
+        help_text='Light/background hex color'
+    )
+    theme_dark = models.CharField(
+        max_length=7, blank=True,
+        help_text='Dark hex color for text-on-light use'
+    )
+    crest_image = models.ImageField(
+        upload_to='crests/', blank=True, null=True,
+        help_text='Family crest, coat of arms, or clan emblem (max 2MB)'
+    )
+    crest_caption = models.CharField(
+        max_length=255, blank=True,
+        help_text='Optional family motto or crest description'
+    )
+
     def __str__(self):
         return self.name
 

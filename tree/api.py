@@ -186,6 +186,80 @@ class TreeViewSet(viewsets.ModelViewSet):
         ).select_related('member', 'requested_by')
         return Response(ChangeRequestSerializer(pending, many=True).data)
 
+    @action(detail=True, methods=['patch'])
+    def theme(self, request, pk=None):
+        """Update the tree's theme preset and/or custom colors. Owner/editor only."""
+        tree = self.get_object()
+        assert_tree_role(request.user, tree, ['owner', 'editor'])
+
+        allowed_fields = {'theme_preset', 'theme_primary', 'theme_mid', 'theme_light', 'theme_dark'}
+        data = {k: v for k, v in request.data.items() if k in allowed_fields}
+
+        # Validate hex color fields
+        import re
+        hex_re = re.compile(r'^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$')
+        for field in ('theme_primary', 'theme_mid', 'theme_light', 'theme_dark'):
+            val = data.get(field, '')
+            if val and not hex_re.match(val):
+                raise ValidationError({field: 'Must be a valid hex color, e.g. #15803d'})
+
+        # Validate preset slug if provided
+        if 'theme_preset' in data:
+            from .theme_presets import PRESET_MAP
+            if data['theme_preset'] and data['theme_preset'] not in PRESET_MAP:
+                raise ValidationError({'theme_preset': 'Unknown preset slug.'})
+
+        for field, value in data.items():
+            setattr(tree, field, value)
+        tree.save(update_fields=list(data.keys()))
+
+        serializer = TreeSerializer(tree, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], parser_classes=None)
+    def crest(self, request, pk=None):
+        """Upload or replace the family crest image. Owner only."""
+        from rest_framework.parsers import MultiPartParser
+        tree = self.get_object()
+        assert_tree_role(request.user, tree, ['owner'])
+
+        image = request.FILES.get('crest_image')
+        caption = request.data.get('crest_caption', '')
+
+        if not image and 'crest_caption' not in request.data:
+            raise ValidationError('Provide crest_image and/or crest_caption.')
+
+        if image:
+            # Validate file type (2MB max, image only)
+            allowed_types = ('image/jpeg', 'image/png', 'image/webp')
+            if image.content_type not in allowed_types:
+                raise ValidationError('Crest must be a JPG, PNG, or WebP image.')
+            if image.size > 2 * 1024 * 1024:
+                raise ValidationError('Crest image must be 2MB or smaller.')
+
+            # Delete old crest if one exists
+            if tree.crest_image:
+                tree.crest_image.delete(save=False)
+
+            tree.crest_image = image
+
+        if 'crest_caption' in request.data:
+            tree.crest_caption = caption
+
+        tree.save()
+        serializer = TreeSerializer(tree, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def presets(self, request):
+        """Return all available theme presets grouped by region."""
+        from .theme_presets import PRESETS_BY_REGION
+        grouped = [
+            {'region': region, 'palettes': palettes}
+            for region, palettes in PRESETS_BY_REGION.items()
+        ]
+        return Response(grouped)
+
 
 # ---------------------------------------------------------------------------
 # FamilyMember ViewSet

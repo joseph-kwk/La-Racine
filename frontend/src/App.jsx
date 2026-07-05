@@ -24,6 +24,7 @@ import AddMember from './components/AddMember';
 import MemberProfile from './components/MemberProfile';
 import AccountProfile from './components/AccountProfile';
 import Notifications from './components/Notifications';
+import TreeSettings from './components/TreeSettings';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -66,6 +67,7 @@ function AppRoutes() {
       <Route path="/trees/new" element={<ProtectedRoute><CreateTree /></ProtectedRoute>} />
       <Route path="/trees/:treeId" element={<ProtectedRoute><TreeView /></ProtectedRoute>} />
       <Route path="/trees/:treeId/members/new" element={<ProtectedRoute><AddMember /></ProtectedRoute>} />
+      <Route path="/trees/:treeId/settings" element={<ProtectedRoute><TreeSettings /></ProtectedRoute>} />
 
       {/* Member profile — dedicated full page */}
       <Route path="/members/:memberId" element={<ProtectedRoute><MemberProfile /></ProtectedRoute>} />
