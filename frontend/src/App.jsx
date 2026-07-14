@@ -13,6 +13,7 @@ import Dashboard from './components/Dashboard';
 import Header from './components/Header';
 import LoadingBar from './components/LoadingBar';
 import ErrorBoundary from './components/ErrorBoundary';
+import LanguageSplashBanner from './components/LanguageSplashBanner';
 
 // Tree pages
 import TreeList from './components/TreeList';
@@ -92,6 +93,7 @@ function App() {
               {/* NotificationProvider is inside Router (for link navigation) and inside AuthProvider (for auth state) */}
               <NotificationProvider>
                 <Header />
+                <LanguageSplashBanner />
                 <LoadingBar />
                 <main className="app-main">
                   <AppRoutes />

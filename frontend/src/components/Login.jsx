@@ -20,65 +20,82 @@ const Login = () => {
     if (result.success) {
       navigate('/dashboard', { replace: true });
     } else {
-      setError(result.error.detail || t('auth.loginFailed'));
+      setError(result.error?.detail || t('auth.loginFailed'));
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center dashboard-container px-4 py-12">
-      <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
-        <div className="text-center mb-6">
-          <img src="/logo.png" alt="La Racine Logo" style={{ height: '80px', marginBottom: '1rem' }} />
-          <h2 className="welcome-title" style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
-            {t('auth.signInToAccount')}
-          </h2>
-          <p className="text-gray-600">{t('common.laRacine')}</p>
+    <div className="auth-page">
+      <div className="auth-card">
+        {/* Brand */}
+        <div className="auth-brand">
+          <img src="/logo.png" alt="La Racine Logo" className="auth-logo" />
+          <h1 className="auth-title">{t('auth.signInToAccount')}</h1>
+          <p className="auth-subtitle">{t('common.laRacine')}</p>
         </div>
-        <form className="mt-8" onSubmit={handleSubmit}>
+
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
           {error && (
-            <div className="error-message">
-              ⚠️ {error}
+            <div className="auth-error" role="alert">
+              <span className="auth-error__icon">⚠️</span>
+              <span>{error}</span>
             </div>
           )}
+
           <div className="form-group">
-            <label className="form-label">{t('auth.username')}</label>
+            <label className="form-label" htmlFor="login-username">
+              {t('auth.username')}
+            </label>
             <input
+              id="login-username"
               type="text"
               required
+              autoComplete="username"
               className="form-input"
               placeholder={t('auth.username')}
               value={credentials.username}
               onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
             />
           </div>
-          <div className="form-group" style={{ marginBottom: '2rem' }}>
-            <label className="form-label">{t('auth.password')}</label>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="login-password">
+              {t('auth.password')}
+            </label>
             <input
+              id="login-password"
               type="password"
               required
+              autoComplete="current-password"
               className="form-input"
               placeholder={t('auth.password')}
               value={credentials.password}
               onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
             />
           </div>
-          <div className="mb-6">
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary w-full"
-              style={{ width: '100%', justifyContent: 'center' }}
-            >
-              {loading ? `🌀 ${t('auth.signingIn')}` : `🚀 ${t('auth.signIn')}`}
-            </button>
-          </div>
-          <div className="text-center mt-4">
-            <Link to="/register" className="link">
-              {t('auth.dontHaveAccount')} <span style={{ fontWeight: 'bold' }}>{t('auth.signUp')}</span>
+
+          <button
+            id="login-submit-btn"
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary auth-submit-btn"
+          >
+            {loading ? (
+              <span className="auth-loading-inner">
+                <span className="btn-spinner" />
+                {t('auth.signingIn')}
+              </span>
+            ) : t('auth.signIn')}
+          </button>
+
+          <p className="auth-switch">
+            {t('auth.dontHaveAccount')}{' '}
+            <Link to="/register" className="link auth-switch__link">
+              {t('auth.signUp')}
             </Link>
-          </div>
+          </p>
         </form>
       </div>
     </div>

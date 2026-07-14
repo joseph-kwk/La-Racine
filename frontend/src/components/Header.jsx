@@ -33,12 +33,14 @@ const Header = () => {
     };
   }, [showLanguageMenu]);
 
-  if (!isAuthenticated) return null; // Hide header when logged out
+  if (!isAuthenticated) return null;
 
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
   };
+
+  const currentLang = languages.find(l => l.code === currentLanguage) || languages[0];
 
   return (
     <header className="nav-header">
@@ -46,19 +48,24 @@ const Header = () => {
         <div className="nav-brand">
           <img src="/logo.png" alt="La Racine Logo" className="dashboard-logo" />
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <Link to="/dashboard" className="link" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-dark)', textDecoration: 'none', border: 'none' }}>
+            <Link
+              to="/dashboard"
+              className="link"
+              style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-dark)', textDecoration: 'none', border: 'none' }}
+            >
               {t('common.laRacine')}
             </Link>
             <span className="dashboard-subtitle">{t('header.familyTreeManagement')}</span>
           </div>
         </div>
+
         <div className="header-actions">
           {/* Theme Toggle */}
           <button
             className="btn btn-logout"
             onClick={toggleTheme}
             style={{ marginRight: '10px', background: 'transparent', border: '1px solid var(--gray-300)', padding: '6px 12px' }}
-            title={theme === 'fresh' ? "Switch to Cozy Mode" : "Switch to Fresh Mode"}
+            title={theme === 'fresh' ? 'Switch to Cozy Mode' : 'Switch to Fresh Mode'}
           >
             {theme === 'fresh' ? '☀️ Fresh' : '🍂 Cozy'}
           </button>
@@ -68,35 +75,95 @@ const Header = () => {
             <button
               className="language-selector-btn"
               onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-              aria-label="Select language"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              aria-label={t('language.select')}
+              aria-haspopup="listbox"
+              aria-expanded={showLanguageMenu}
+              id="language-selector-trigger"
             >
-              <span className="language-flag" style={{ fontSize: '1.4rem', lineHeight: '1', display: 'flex', alignItems: 'center' }}>
-                {languages.find(l => l.code === currentLanguage)?.flag || '🌐'}
+              <span className="language-flag" style={{ fontSize: '1.2rem', lineHeight: 1 }}>
+                {currentLang.flag}
               </span>
-              <span className="language-code" style={{ fontSize: '0.9rem', fontWeight: 600 }}>{currentLanguage.toUpperCase()}</span>
+              {/* Show native name in its own script */}
+              <span className="language-native-name" style={{ fontSize: '0.82rem', fontWeight: 600, maxWidth: '48px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {currentLang.nativeName}
+              </span>
+              <span className="language-chevron" style={{ fontSize: '0.65rem', opacity: 0.5, transition: 'transform 0.2s', display: 'inline-block', transform: showLanguageMenu ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
             </button>
+
             {showLanguageMenu && (
-              <div className="language-dropdown" style={{ position: 'absolute', top: '100%', right: 0, background: 'white', padding: '8px', borderRadius: '12px', boxShadow: 'var(--shadow-lg)', zIndex: 100, display: 'flex', flexDirection: 'column', gap: '4px', border: '1px solid rgba(0,0,0,0.05)' }}>
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    className={`language-option ${currentLanguage === lang.code ? 'active' : ''}`}
-                    onClick={() => {
-                      changeLanguage(lang.code);
-                      setShowLanguageMenu(false);
-                    }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: currentLanguage === lang.code ? 'var(--gray-50)' : 'transparent', borderRadius: '8px', cursor: 'pointer', width: '100%', textAlign: 'left' }}
-                  >
-                    <span className="language-flag">{lang.flag}</span>
-                    <span className="language-name" style={{ fontSize: '0.9rem' }}>{lang.name}</span>
-                  </button>
-                ))}
+              <div
+                className="language-dropdown"
+                role="listbox"
+                aria-label={t('language.select')}
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  right: 0,
+                  background: 'white',
+                  padding: '6px',
+                  borderRadius: '14px',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+                  zIndex: 200,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
+                  border: '1px solid rgba(0,0,0,0.06)',
+                  minWidth: '160px',
+                }}
+              >
+                {languages.map((lang) => {
+                  const isActive = currentLanguage === lang.code;
+                  return (
+                    <button
+                      key={lang.code}
+                      role="option"
+                      aria-selected={isActive}
+                      className={`language-option ${isActive ? 'active' : ''}`}
+                      onClick={() => {
+                        changeLanguage(lang.code);
+                        setShowLanguageMenu(false);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '9px 12px',
+                        border: 'none',
+                        background: isActive ? 'var(--primary-light, #d1fae5)' : 'transparent',
+                        borderRadius: '10px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left',
+                        transition: 'background 0.15s',
+                      }}
+                    >
+                      <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{lang.flag}</span>
+                      {/* Native name in its own script */}
+                      <span style={{
+                        fontSize: '0.9rem',
+                        fontWeight: isActive ? 700 : 500,
+                        color: isActive ? 'var(--primary-dark)' : 'var(--gray-700)',
+                        flex: 1,
+                      }}>
+                        {lang.nativeName}
+                      </span>
+                      {isActive && (
+                        <span style={{ fontSize: '0.8rem', color: 'var(--primary-green)' }}>✓</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
 
-          <Link to="/notifications" className="btn btn-logout" style={{ background: 'white', color: 'var(--primary-dark)', borderColor: 'var(--gray-200)', position: 'relative' }}>
+          {/* Notifications */}
+          <Link
+            to="/notifications"
+            className="btn btn-logout"
+            style={{ background: 'white', color: 'var(--primary-dark)', borderColor: 'var(--gray-200)', position: 'relative' }}
+            aria-label={`${t('header.notifications')}${unreadCount > 0 ? ` (${unreadCount})` : ''}`}
+          >
             🔔
             {unreadCount > 0 && (
               <span style={{
@@ -111,12 +178,14 @@ const Header = () => {
               </span>
             )}
           </Link>
+
           <div className="nav-welcome">
             <span>👋</span>
             <Link to="/account" style={{ fontWeight: 500, color: 'var(--primary-dark)', textDecoration: 'none' }}>
               {user?.username}
             </Link>
           </div>
+
           <button onClick={handleLogout} className="btn btn-logout">
             {t('auth.logout')}
           </button>

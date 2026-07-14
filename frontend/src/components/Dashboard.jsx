@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [activeView, setActiveView] = useState('overview');
   const [selectedTreeType, setSelectedTreeType] = useState('all');
+  const [retrying, setRetrying] = useState(false);
 
   // Tree type definitions for enhanced categorization
   const treeTypeOptions = [
@@ -53,7 +54,7 @@ const Dashboard = () => {
 
     fetchData();
     fetchNotifications();
-  }, []);
+  }, [retrying]);
 
   // Header handles logout globally
 
@@ -125,8 +126,11 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="dashboard-main">
         {error && (
-          <div className="alert alert-error">
-            {error}
+          <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+            <span>⚠️ {error}</span>
+            <button className="btn btn-outline btn-sm" onClick={() => { setError(''); setLoading(true); setRetrying(r => !r); }}>
+              {t('messages.tryAgain')}
+            </button>
           </div>
         )}
 
@@ -235,33 +239,18 @@ const Dashboard = () => {
               </section>
             )}
 
-            {/* Recent Activity */}
-            <section className="dashboard-section">
-              <h2 className="section-title">{t('dashboard.recentActivity')}</h2>
-              <div className="activity-feed">
-                <div className="activity-item">
-                  <div className="activity-icon">👶</div>
-                  <div className="activity-content">
-                    <p><strong>New member added:</strong> Baby Emma to Smith Family Tree</p>
-                    <span className="activity-time">2 hours ago</span>
+            {/* Recent Activity — only show if real notifications exist */}
+            {notifications.length === 0 ? (
+              <section className="dashboard-section">
+                <h2 className="section-title">{t('dashboard.recentActivity')}</h2>
+                <div className="activity-feed empty-activity">
+                  <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-400)' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📋</div>
+                    <p style={{ fontSize: '0.95rem' }}>Activity will appear here as your family tree grows.</p>
                   </div>
                 </div>
-                <div className="activity-item">
-                  <div className="activity-icon">📸</div>
-                  <div className="activity-content">
-                    <p><strong>Photo uploaded:</strong> Family reunion 2025</p>
-                    <span className="activity-time">1 day ago</span>
-                  </div>
-                </div>
-                <div className="activity-item">
-                  <div className="activity-icon">🎂</div>
-                  <div className="activity-content">
-                    <p><strong>Upcoming birthday:</strong> Uncle John turns 70</p>
-                    <span className="activity-time">3 days from now</span>
-                  </div>
-                </div>
-              </div>
-            </section>
+              </section>
+            ) : null}
           </div>
         )}
 
@@ -332,11 +321,11 @@ const Dashboard = () => {
                       <div className="tree-stats">
                         <div className="tree-stat">
                           <span className="stat-number">{tree.member_count || 0}</span>
-                          <span className="stat-label">Members</span>
+                          <span className="stat-label">{t('tree.members')}</span>
                         </div>
                         <div className="tree-stat">
                           <span className="stat-number">{tree.relationship_count || 0}</span>
-                          <span className="stat-label">Relationships</span>
+                          <span className="stat-label">{t('tree.relationships')}</span>
                         </div>
                       </div>
 
@@ -345,26 +334,26 @@ const Dashboard = () => {
                           to={`/tree/${tree.id}`}
                           className="btn btn-primary btn-sm"
                         >
-                          🌳 View Tree
+                          🌳 {t('tree.viewTree')}
                         </Link>
                         {(tree.role === 'owner' || tree.role === 'editor') && (
                           <Link
                             to={`/trees/${tree.id}/members/new`}
                             className="btn btn-outline btn-sm"
                           >
-                            ✏️ Add Member
+                            ✏️ {t('member.addMember')}
                           </Link>
                         )}
                         {tree.role === 'owner' && (
-                          <button className="btn btn-outline btn-sm">
-                            ⚙️ Settings
-                          </button>
+                          <Link to={`/trees/${tree.id}/settings`} className="btn btn-outline btn-sm">
+                            ⚙️ {t('common.edit')}
+                          </Link>
                         )}
                       </div>
 
                       <div className="tree-card-footer">
                         <span className="tree-card-date">
-                          Updated {new Date(tree.last_updated || tree.created_at).toLocaleDateString()}
+                          {t('tree.lastUpdated')}: {new Date(tree.last_updated || tree.created_at).toLocaleDateString()}
                         </span>
                       </div>
                     </div>

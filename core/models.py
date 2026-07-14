@@ -24,18 +24,11 @@ class UserProfile(models.Model):
     ]
 
     LANGUAGE_CHOICES = [
-        ('en',    'English'),
-        ('fr',    'Français'),
-        ('es',    'Español'),
-        ('pt',    'Português'),
-        ('ar',    'العربية'),
-        ('sw',    'Kiswahili'),
-        ('zh',    '中文'),
-        ('hi',    'हिन्दी'),
-        ('de',    'Deutsch'),
-        ('it',    'Italiano'),
-        ('ja',    '日本語'),
-        ('ko',    '한국어'),
+        ('en', 'English'),
+        ('fr', 'Français'),
+        ('es', 'Español'),
+        ('hi', 'हिन्दी (Hindi)'),
+        ('zh', '中文 (Chinese Simplified)'),
     ]
 
     DIGEST_CHOICES = [

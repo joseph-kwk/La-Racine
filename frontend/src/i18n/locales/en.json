@@ -141,7 +141,13 @@
     "enterLocation": "Enter location",
     "enterOccupation": "Enter occupation",
     "enterBiography": "Enter biography",
-    "uploadPhoto": "Upload Photo"
+    "uploadPhoto": "Upload Photo",
+    "age": "Age",
+    "showAge": "Show age on profile",
+    "deceased": "Deceased",
+    "living": "Living",
+    "nationality": "Nationality",
+    "religion": "Religion"
   },
   "relationships": {
     "parent": "Parent",
@@ -205,5 +211,69 @@
   "timeline": {
     "wasBorn": " was born",
     "passedAway": " passed away"
+  },
+  "account": {
+    "title": "Account Settings",
+    "displayName": "Display Name",
+    "nickname": "Nickname",
+    "bio": "About Me",
+    "interfaceLanguage": "Interface Language",
+    "timezone": "Timezone",
+    "saveChanges": "Save Changes",
+    "saved": "Saved!",
+    "saving": "Saving...",
+    "profilePhoto": "Profile Photo",
+    "birthday": "Birthday",
+    "location": "Current Location",
+    "notifications": "Notification Preferences",
+    "emailDigest": "Email Digest",
+    "notifyBirthdays": "Notify on birthdays",
+    "notifyDeaths": "Notify on death anniversaries",
+    "notifyNewMembers": "Notify on new members added",
+    "linkedMember": "Linked Family Member"
+  },
+  "language": {
+    "select": "Language",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "hindi": "हिन्दी",
+    "chinese": "中文",
+    "detectedTitle": "Language detected",
+    "detectedMessage": "We noticed you're in {{country}}. Switch to {{language}}?",
+    "switchTo": "Switch to {{language}}",
+    "keepEnglish": "Keep English",
+    "dismiss": "Dismiss"
+  },
+  "theme": {
+    "title": "Family Theme & Identity",
+    "choosePreset": "Choose a Preset",
+    "customColors": "Custom Colors",
+    "primaryColor": "Primary Color",
+    "crest": "Family Crest",
+    "uploadCrest": "Upload Crest Image",
+    "crestCaption": "Family Motto or Crest Caption",
+    "preview": "Live Preview",
+    "apply": "Apply Theme",
+    "region": "Region",
+    "saving": "Saving theme...",
+    "saved": "Theme saved!",
+    "noCrest": "No crest uploaded",
+    "removeCrest": "Remove Crest"
+  },
+  "dates": {
+    "exact": "Exact date",
+    "monthYear": "Month & Year",
+    "yearOnly": "Year only",
+    "decade": "Decade (e.g. 1940s)",
+    "approximate": "Approximate (~)",
+    "before": "Before a year",
+    "after": "After a year",
+    "unknown": "Unknown",
+    "bce": "BCE (Before Common Era)",
+    "customText": "Custom display text",
+    "precision": "Date precision",
+    "enterYear": "Enter year",
+    "circa": "circa"
   }
 }

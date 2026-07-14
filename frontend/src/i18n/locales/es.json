@@ -111,8 +111,8 @@
     "treeDetails": "Detalles del árbol",
     "members": "miembros",
     "relationships": "relaciones",
-    "born": "Nacido",
-    "died": "Fallecido"
+    "born": "Nacido/a",
+    "died": "Fallecido/a"
   },
   "member": {
     "firstName": "Nombre",
@@ -141,7 +141,13 @@
     "enterLocation": "Ingrese la ubicación",
     "enterOccupation": "Ingrese la ocupación",
     "enterBiography": "Ingrese la biografía",
-    "uploadPhoto": "Subir foto"
+    "uploadPhoto": "Subir foto",
+    "age": "Edad",
+    "showAge": "Mostrar edad en el perfil",
+    "deceased": "Fallecido/a",
+    "living": "Vivo/a",
+    "nationality": "Nacionalidad",
+    "religion": "Religión"
   },
   "relationships": {
     "parent": "Padre/Madre",
@@ -161,7 +167,7 @@
     "addition": "Nueva incorporación",
     "hasBirthday": "¡tiene un cumpleaños!",
     "hasPassedAway": "ha fallecido.",
-    "wasAdded": "fue agregado a tu árbol.",
+    "wasAdded": "fue agregado/a a tu árbol.",
     "markAsRead": "Marcar como leído",
     "markAllRead": "Marcar todo como leído"
   },
@@ -199,6 +205,75 @@
     "noResultsFound": "No se encontraron resultados",
     "loadingData": "Cargando datos...",
     "fetchingTrees": "Obteniendo árboles...",
-    "fetchingMembers": "Obteniendo miembros..."
+    "fetchingMembers": "Obteniendo miembros...",
+    "noTimelineData": "No hay datos de cronología. Agregue fechas de nacimiento a los miembros."
+  },
+  "timeline": {
+    "wasBorn": " nació",
+    "passedAway": " falleció"
+  },
+  "account": {
+    "title": "Configuración de cuenta",
+    "displayName": "Nombre de pantalla",
+    "nickname": "Apodo",
+    "bio": "Acerca de mí",
+    "interfaceLanguage": "Idioma de interfaz",
+    "timezone": "Zona horaria",
+    "saveChanges": "Guardar cambios",
+    "saved": "¡Guardado!",
+    "saving": "Guardando...",
+    "profilePhoto": "Foto de perfil",
+    "birthday": "Fecha de nacimiento",
+    "location": "Ubicación actual",
+    "notifications": "Preferencias de notificaciones",
+    "emailDigest": "Resumen por correo",
+    "notifyBirthdays": "Notificar en cumpleaños",
+    "notifyDeaths": "Notificar en aniversarios de fallecimiento",
+    "notifyNewMembers": "Notificar en nuevos miembros",
+    "linkedMember": "Miembro familiar vinculado"
+  },
+  "language": {
+    "select": "Idioma",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "hindi": "हिन्दी",
+    "chinese": "中文",
+    "detectedTitle": "Idioma detectado",
+    "detectedMessage": "Detectamos que estás en {{country}}. ¿Cambiar a {{language}}?",
+    "switchTo": "Cambiar a {{language}}",
+    "keepEnglish": "Mantener inglés",
+    "dismiss": "Ignorar"
+  },
+  "theme": {
+    "title": "Tema e identidad familiar",
+    "choosePreset": "Elegir un estilo predeterminado",
+    "customColors": "Colores personalizados",
+    "primaryColor": "Color principal",
+    "crest": "Escudo familiar",
+    "uploadCrest": "Subir escudo",
+    "crestCaption": "Lema familiar o descripción del escudo",
+    "preview": "Vista previa en vivo",
+    "apply": "Aplicar tema",
+    "region": "Región",
+    "saving": "Guardando tema...",
+    "saved": "¡Tema guardado!",
+    "noCrest": "No hay escudo subido",
+    "removeCrest": "Eliminar escudo"
+  },
+  "dates": {
+    "exact": "Fecha exacta",
+    "monthYear": "Mes y año",
+    "yearOnly": "Solo año",
+    "decade": "Década (ej. años 1940)",
+    "approximate": "Aproximado (~)",
+    "before": "Antes de un año",
+    "after": "Después de un año",
+    "unknown": "Desconocido",
+    "bce": "AEC (Antes de la Era Común)",
+    "customText": "Texto de visualización personalizado",
+    "precision": "Precisión de la fecha",
+    "enterYear": "Ingrese el año",
+    "circa": "circa"
   }
 }

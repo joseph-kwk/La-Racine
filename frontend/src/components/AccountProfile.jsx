@@ -9,16 +9,16 @@
 import React, { useState, useEffect } from 'react';
 import { profileAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
+// Only the 5 actively supported languages — native names in their own script
 const LANGUAGES = [
-  { code: 'en', label: '🇬🇧 English' },
+  { code: 'en', label: '🌐 English' },
   { code: 'fr', label: '🇫🇷 Français' },
   { code: 'es', label: '🇪🇸 Español' },
-  { code: 'pt', label: '🇧🇷 Português' },
-  { code: 'ar', label: '🇸🇦 العربية' },
-  { code: 'sw', label: '🌍 Kiswahili' },
-  { code: 'zh', label: '🇨🇳 中文' },
   { code: 'hi', label: '🇮🇳 हिन्दी' },
+  { code: 'zh', label: '🇨🇳 中文' },
 ];
 
 const TIMEZONES = [
@@ -30,6 +30,8 @@ const TIMEZONES = [
 
 export default function AccountProfile() {
   const { user, profile, updateProfile } = useAuth();
+  const { changeLanguage } = useLanguage();
+  const { t } = useTranslation();
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -49,8 +51,14 @@ export default function AccountProfile() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    const newValue = type === 'checkbox' ? checked : value;
+    setForm((prev) => ({ ...prev, [name]: newValue }));
     setSaved(false);
+
+    // Instantly switch the UI language when the user changes the language selector
+    if (name === 'preferred_language') {
+      changeLanguage(newValue);
+    }
   };
 
   const handleSave = async (e) => {
@@ -101,47 +109,51 @@ export default function AccountProfile() {
 
         {/* ── Display Settings ── */}
         <section className="account-profile__section">
-          <h2 className="account-profile__section-title">Display Settings</h2>
+          <h2 className="account-profile__section-title">{t('account.title')}</h2>
           <div className="account-profile__grid">
             <div className="form-group">
-              <label className="form-label">Display Name</label>
+              <label className="form-label" htmlFor="ap-display-name">{t('account.displayName')}</label>
               <input
+                id="ap-display-name"
                 className="form-input"
                 name="display_name"
                 value={form.display_name || ''}
                 onChange={handleChange}
-                placeholder="How you appear to other family members"
+                placeholder={t('account.displayName')}
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Nickname</label>
+              <label className="form-label" htmlFor="ap-nickname">{t('account.nickname')}</label>
               <input
+                id="ap-nickname"
                 className="form-input"
                 name="nickname"
                 value={form.nickname || ''}
                 onChange={handleChange}
-                placeholder="Optional nickname"
+                placeholder={t('account.nickname')}
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Bio</label>
+              <label className="form-label" htmlFor="ap-bio">{t('account.bio')}</label>
               <textarea
+                id="ap-bio"
                 className="form-input"
                 name="bio"
                 value={form.bio || ''}
                 onChange={handleChange}
                 rows={3}
-                placeholder="A short bio about yourself"
+                placeholder={t('account.bio')}
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Current Location</label>
+              <label className="form-label" htmlFor="ap-location">{t('account.location')}</label>
               <input
+                id="ap-location"
                 className="form-input"
                 name="current_location"
                 value={form.current_location || ''}
                 onChange={handleChange}
-                placeholder="City, Country"
+                placeholder={t('account.location')}
               />
             </div>
           </div>
@@ -149,11 +161,12 @@ export default function AccountProfile() {
 
         {/* ── Preferences ── */}
         <section className="account-profile__section">
-          <h2 className="account-profile__section-title">Preferences</h2>
+          <h2 className="account-profile__section-title">{t('language.select')} & {t('account.timezone')}</h2>
           <div className="account-profile__grid">
             <div className="form-group">
-              <label className="form-label">Language</label>
+              <label className="form-label" htmlFor="ap-language">{t('account.interfaceLanguage')}</label>
               <select
+                id="ap-language"
                 className="form-input form-input--select"
                 name="preferred_language"
                 value={form.preferred_language || 'en'}
@@ -165,8 +178,9 @@ export default function AccountProfile() {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Timezone</label>
+              <label className="form-label" htmlFor="ap-timezone">{t('account.timezone')}</label>
               <select
+                id="ap-timezone"
                 className="form-input form-input--select"
                 name="timezone"
                 value={form.timezone || 'UTC'}
@@ -178,7 +192,7 @@ export default function AccountProfile() {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Theme</label>
+              <label className="form-label" htmlFor="ap-email-digest">{t('account.emailDigest')}</label>
               <select
                 className="form-input form-input--select"
                 name="theme_preference"
@@ -193,6 +207,7 @@ export default function AccountProfile() {
             <div className="form-group">
               <label className="form-label">Email Digest</label>
               <select
+                id="ap-email-digest"
                 className="form-input form-input--select"
                 name="digest_frequency"
                 value={form.digest_frequency || 'instant'}
@@ -209,7 +224,7 @@ export default function AccountProfile() {
 
         {/* ── Notifications ── */}
         <section className="account-profile__section">
-          <h2 className="account-profile__section-title">Notification Preferences</h2>
+          <h2 className="account-profile__section-title">{t('account.notifications')}</h2>
           <div className="account-profile__toggle-grid">
             {[
               { key: 'notify_birthdays_email', label: '🎂 Birthday reminders (email)' },
@@ -235,9 +250,9 @@ export default function AccountProfile() {
         {error && <p className="form-error">{error}</p>}
 
         <div className="account-profile__actions">
-          {saved && <span className="account-profile__saved">✅ Saved!</span>}
+          {saved && <span className="account-profile__saved">✅ {t('account.saved')}</span>}
           <button type="submit" className="btn btn--primary btn--lg" disabled={saving}>
-            {saving ? 'Saving…' : 'Save Changes'}
+            {saving ? t('account.saving') : t('account.saveChanges')}
           </button>
         </div>
       </form>

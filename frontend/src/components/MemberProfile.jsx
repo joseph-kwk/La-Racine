@@ -15,6 +15,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { memberAPI, lifeEventAPI, profileAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 const EVENT_ICONS = {
   birth: '🍼', baptism: '⛪', education: '🎓', graduation: '🎓',
@@ -111,6 +112,7 @@ export default function MemberProfile() {
   const { memberId } = useParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { t } = useTranslation();
 
   const [member, setMember] = useState(null);
   const [relationships, setRelationships] = useState([]);
@@ -118,7 +120,8 @@ export default function MemberProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('info');
-  const [proposeModal, setProposeModal] = useState(null); // { fieldName, fieldLabel, currentValue }
+  const [proposeModal, setProposeModal] = useState(null);
+  const [toast, setToast] = useState(null); // { type: 'success'|'error', message: string }
 
   useEffect(() => {
     const load = async () => {
@@ -142,25 +145,48 @@ export default function MemberProfile() {
     load();
   }, [memberId]);
 
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 4000);
+  };
+
   const handleClaimProfile = async () => {
     try {
       await profileAPI.claimMember(memberId);
-      alert('Profile claimed! This family member is now linked to your account.');
-      window.location.reload();
+      showToast('success', 'Profile claimed! This family member is now linked to your account.');
+      // Refetch member data instead of hard reload
+      const res = await memberAPI.get(memberId);
+      setMember(res.data);
     } catch (err) {
-      alert(err.response?.data?.error || 'Could not claim this profile.');
+      showToast('error', err.response?.data?.error || 'Could not claim this profile.');
     }
   };
 
-  if (loading) return <div className="member-profile__loading">Loading profile…</div>;
-  if (error) return <div className="member-profile__error">{error}</div>;
+  if (loading) return (
+    <div className="member-profile__loading">
+      <div className="loading-spinner" />
+      <p>Loading profile…</p>
+    </div>
+  );
+  if (error) return (
+    <div className="member-profile__error">
+      <p>❌ {error}</p>
+      <button className="btn btn--ghost" onClick={() => navigate(-1)}>← {t('common.back')}</button>
+    </div>
+  );
   if (!member) return null;
 
   const isLinkedToMe = member.user_account === user?.id;
-  const canEdit = true; // Simplified — actual perm check is server-side
+  const canEdit = true;
 
   return (
     <div className="member-profile">
+      {/* ── Toast notification ── */}
+      {toast && (
+        <div className={`member-profile__toast member-profile__toast--${toast.type}`} role="status" aria-live="polite">
+          {toast.type === 'success' ? '✅' : '⚠️'} {toast.message}
+        </div>
+      )}
       {/* ── Hero ── */}
       <div className="member-profile__hero">
         <div className="member-profile__hero-bg" />
@@ -221,7 +247,7 @@ export default function MemberProfile() {
               <span className="member-profile__verified-badge">✅ Your Profile</span>
             )}
             <Link to={`/trees/${member.tree}`} className="btn btn--ghost">
-              ← Back to Tree
+              ← {t('common.back')}
             </Link>
           </div>
         </div>
