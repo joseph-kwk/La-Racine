@@ -11,13 +11,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { treeAPI } from '../services/api';
+import { useTranslation } from 'react-i18next';
+import { treeAPI, invitationAPI } from '../services/api';
 import ThemePicker from './ThemePicker';
 import TreeThemeProvider from './TreeThemeProvider';
 
 const SECTIONS = [
   { id: 'general',    icon: '📋', label: 'General' },
   { id: 'identity',   icon: '🎨', label: 'Family Identity' },
+  { id: 'invite',     icon: '✉️', label: 'Invite Members' },
   { id: 'governance', icon: '⚙️', label: 'Governance' },
 ];
 
@@ -45,6 +47,7 @@ const LANGUAGE_OPTIONS = [
 const TreeSettings = () => {
   const { treeId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [tree, setTree]         = useState(null);
   const [loading, setLoading]   = useState(true);
@@ -52,6 +55,16 @@ const TreeSettings = () => {
   const [error, setError]       = useState('');
   const [success, setSuccess]   = useState('');
   const [activeSection, setActiveSection] = useState('general');
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // Invite form state
+  const [inviteEmail, setInviteEmail]     = useState('');
+  const [inviteName, setInviteName]       = useState('');
+  const [inviteRole, setInviteRole]       = useState('viewer');
+  const [inviteMsg, setInviteMsg]         = useState('');
+  const [sending, setSending]             = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState('');
 
   // General form fields
   const [name, setName]                     = useState('');
@@ -150,19 +163,50 @@ const TreeSettings = () => {
 
   // ── Delete Tree ───────────────────────────────────────────────────────────
   const handleDelete = async () => {
-    if (!window.confirm(`Permanently delete "${tree?.name}"? This cannot be undone.`)) return;
+    setDeleting(true);
     try {
       await treeAPI.delete(treeId);
       navigate('/trees');
     } catch {
       setError('Could not delete tree. Only the owner can do this.');
+      setConfirmDeleteOpen(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // ── Send Invitation ────────────────────────────────────────────────────────
+  const handleSendInvite = async (e) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) return;
+    setSending(true);
+    setError('');
+    setInviteSuccess('');
+    try {
+      await invitationAPI.create({
+        tree: parseInt(treeId),
+        invited_email: inviteEmail.trim(),
+        invited_name: inviteName.trim(),
+        role: inviteRole,
+        invitation_message: inviteMsg.trim(),
+      });
+      setInviteSuccess(`✅ Invitation sent to ${inviteEmail}!`);
+      setInviteEmail('');
+      setInviteName('');
+      setInviteMsg('');
+      setInviteRole('viewer');
+    } catch (err) {
+      const d = err.response?.data;
+      setError(typeof d === 'string' ? d : d?.detail || d?.invited_email?.[0] || 'Failed to send invitation.');
+    } finally {
+      setSending(false);
     }
   };
 
   if (loading) {
     return (
       <div className="tree-settings__loading">
-        <div className="tree-settings__loading-spinner">⚙️</div>
+        <div className="loading-spinner" />
         <p>Loading settings…</p>
       </div>
     );
@@ -284,6 +328,83 @@ const TreeSettings = () => {
               </div>
             )}
 
+            {/* ── Invite Members ── */}
+            {activeSection === 'invite' && (
+              <div className="tree-settings__section">
+                <h2 className="tree-settings__section-title">✉️ Invite Members</h2>
+                <p className="tree-settings__section-hint">
+                  Send an email invitation to a family member. They'll get a link to join this tree with the role you choose.
+                </p>
+
+                {inviteSuccess && (
+                  <div className="tree-settings__alert tree-settings__alert--success">{inviteSuccess}</div>
+                )}
+
+                <form onSubmit={handleSendInvite}>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="ts-email" className="form-label">Email address <span className="add-member__required">*</span></label>
+                      <input
+                        id="ts-email"
+                        type="email"
+                        className="form-input"
+                        value={inviteEmail}
+                        onChange={e => setInviteEmail(e.target.value)}
+                        placeholder="family.member@email.com"
+                        required
+                        autoComplete="email"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="ts-name" className="form-label">Their name <span className="add-member__optional">(optional)</span></label>
+                      <input
+                        id="ts-name"
+                        type="text"
+                        className="form-input"
+                        value={inviteName}
+                        onChange={e => setInviteName(e.target.value)}
+                        placeholder="e.g. Marie Kasongo"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group" style={{ maxWidth: '240px' }}>
+                    <label htmlFor="ts-role" className="form-label">Role</label>
+                    <select
+                      id="ts-role"
+                      className="form-input form-input--select"
+                      value={inviteRole}
+                      onChange={e => setInviteRole(e.target.value)}
+                    >
+                      <option value="viewer">👁️ Viewer — read only</option>
+                      <option value="editor">✏️ Editor — can add/edit members</option>
+                      <option value="validator">✅ Validator — can approve changes</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="ts-msg" className="form-label">Personal message <span className="add-member__optional">(optional)</span></label>
+                    <textarea
+                      id="ts-msg"
+                      className="form-input form-textarea"
+                      rows={3}
+                      value={inviteMsg}
+                      onChange={e => setInviteMsg(e.target.value)}
+                      placeholder="Add a personal note to the invitation email…"
+                    />
+                  </div>
+
+                  <div className="tree-settings__form-actions">
+                    <button type="submit" className="btn btn--primary" disabled={sending || !inviteEmail.trim()}>
+                      {sending ? (
+                        <span className="auth-loading-inner"><span className="btn-spinner" /> Sending…</span>
+                      ) : '✉️ Send Invitation'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
             {/* ── Governance ── */}
             {activeSection === 'governance' && (
               <form className="tree-settings__section" onSubmit={saveGovernance}>
@@ -322,7 +443,9 @@ const TreeSettings = () => {
 
                 <div className="tree-settings__form-actions">
                   <button type="submit" className="btn btn--primary" disabled={saving}>
-                    {saving ? '⏳ Saving…' : '💾 Save Governance'}
+                    {saving ? (
+                      <span className="auth-loading-inner"><span className="btn-spinner" /> Saving…</span>
+                    ) : '💾 Save Governance'}
                   </button>
                 </div>
 
@@ -330,9 +453,25 @@ const TreeSettings = () => {
                 <div className="tree-settings__danger-zone">
                   <h3 className="tree-settings__danger-title">⚠️ Danger Zone</h3>
                   <p>Deleting this tree is permanent and cannot be undone. All members, relationships, and media will be removed.</p>
-                  <button type="button" className="btn btn--danger" onClick={handleDelete}>
-                    🗑️ Delete This Tree
-                  </button>
+                  {!confirmDeleteOpen ? (
+                    <button type="button" className="btn btn--danger" onClick={() => setConfirmDeleteOpen(true)}>
+                      🗑️ Delete This Tree
+                    </button>
+                  ) : (
+                    <div className="confirm-dialog" style={{ marginTop: '1rem' }}>
+                      <p><strong>Are you absolutely sure?</strong> Type the tree name to confirm:</p>
+                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                        <button type="button" className="btn btn--ghost" onClick={() => setConfirmDeleteOpen(false)} disabled={deleting}>
+                          Cancel
+                        </button>
+                        <button type="button" className="btn btn--danger" onClick={handleDelete} disabled={deleting}>
+                          {deleting ? (
+                            <span className="auth-loading-inner"><span className="btn-spinner" /> Deleting…</span>
+                          ) : '⚠️ Yes, permanently delete'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </form>
             )}

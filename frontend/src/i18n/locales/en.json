@@ -8,6 +8,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
+    "deleting": "Deleting...",
     "edit": "Edit",
     "create": "Create",
     "view": "View",
@@ -20,7 +21,12 @@
     "close": "Close",
     "yes": "Yes",
     "no": "No",
-    "all": "All"
+    "all": "All",
+    "select": "Select",
+    "confirm": "Confirm",
+    "settings": "Settings",
+    "refresh": "Refresh",
+    "familyMember": "Family Member"
   },
   "auth": {
     "login": "Log in",
@@ -92,6 +98,14 @@
     "stepFamily": "Step Family",
     "stepParentLines": "Step-parent family lines"
   },
+  "nav": {
+    "dashboard": "Dashboard",
+    "trees": "Trees",
+    "members": "Members",
+    "notifications": "Notifications",
+    "account": "Account",
+    "logout": "Log out"
+  },
   "tree": {
     "name": "Tree Name",
     "description": "Description",
@@ -109,18 +123,22 @@
     "deleteTree": "Delete Tree",
     "createTree": "Create Tree",
     "treeDetails": "Tree Details",
-    "members": "members",
-    "relationships": "relationships",
+    "members": "Members",
+    "relationships": "Relationships",
     "born": "Born",
-    "died": "Died"
+    "died": "Died",
+    "deleteConfirmTitle": "Delete Tree",
+    "deleteConfirmBody": "Are you sure you want to permanently delete \"{{name}}\"? This cannot be undone."
   },
   "member": {
     "firstName": "First Name",
     "lastName": "Last Name",
+    "maidenName": "Maiden Name",
     "nickname": "Nickname",
     "gender": "Gender",
     "male": "Male",
     "female": "Female",
+    "nonBinary": "Non-binary",
     "other": "Other",
     "selectGender": "Select gender",
     "birthDate": "Birth Date",
@@ -132,6 +150,7 @@
     "photo": "Photo",
     "addMember": "Add Member",
     "editMember": "Edit Member",
+    "editSubtitle": "Update this member's information",
     "deleteMember": "Delete Member",
     "memberDetails": "Member Details",
     "enterFirstName": "Enter first name",
@@ -146,8 +165,30 @@
     "showAge": "Show age on profile",
     "deceased": "Deceased",
     "living": "Living",
+    "stillLiving": "Still living?",
     "nationality": "Nationality",
-    "religion": "Religion"
+    "religion": "Religion",
+    "identity": "Identity",
+    "lifeDates": "Life Dates",
+    "birth": "Birth",
+    "death": "Death",
+    "dateOfBirth": "Date of Birth",
+    "dateOfDeath": "Date of Death",
+    "placeOfBirth": "Place of Birth",
+    "placeOfDeath": "Place of Death",
+    "currentLocation": "Current Location",
+    "about": "About",
+    "internalNotes": "Internal Notes",
+    "notesHint": "only visible to tree admins",
+    "relationships": "Relationships",
+    "relationshipsHint": "Connect this member to others in the tree",
+    "parent1": "Parent 1",
+    "parent2": "Parent 2",
+    "noParent": "No Parent / Unlinked",
+    "viewProfile": "View Profile",
+    "updateSuccess": "Member updated successfully!",
+    "updateError": "Failed to update member.",
+    "firstLastNameRequired": "First and last name are required."
   },
   "relationships": {
     "parent": "Parent",
@@ -161,7 +202,7 @@
   },
   "notifications": {
     "title": "Notifications",
-    "noNotifications": "No notifications yet",
+    "noNotifications": "No notifications yet.",
     "birthday": "Birthday",
     "death": "Death Anniversary",
     "addition": "New Addition",
@@ -169,7 +210,29 @@
     "hasPassedAway": "has passed away.",
     "wasAdded": "was added to your tree.",
     "markAsRead": "Mark as read",
-    "markAllRead": "Mark all as read"
+    "markRead": "Mark as read",
+    "markAllRead": "Mark all as read",
+    "unread": "unread",
+    "subtitle": "Stay up to date with your family tree",
+    "allCaughtUp": "You're all caught up!"
+  },
+  "updates": {
+    "noUpdates": "No updates yet",
+    "beFirst": "Be the first to share something with the family!",
+    "whatsNew": "What's new with the family?",
+    "titleOptional": "Title (optional)",
+    "postUpdate": "Post Update",
+    "posting": "Posting...",
+    "like": "Like",
+    "writeComment": "Write a comment...",
+    "postComment": "Post"
+  },
+  "members": {
+    "searchPlaceholder": "Search by name, location...",
+    "noResults": "No members match your search",
+    "noMembersYet": "No family members yet",
+    "tryDifferentSearch": "Try a different search term",
+    "addFromTree": "Open a tree and add your first member"
   },
   "activity": {
     "newMemberAdded": "New member added:",
@@ -200,10 +263,10 @@
     "changesSaved": "Changes saved successfully!",
     "deletingItem": "Deleting...",
     "itemDeleted": "Item deleted successfully!",
-    "errorOccurred": "An error occurred",
-    "tryAgain": "Please try again",
+    "errorOccurred": "An error occurred. Please try again.",
+    "tryAgain": "Try again",
     "noResultsFound": "No results found",
-    "loadingData": "Loading data...",
+    "loadingData": "Loading...",
     "fetchingTrees": "Fetching trees...",
     "fetchingMembers": "Fetching members...",
     "noTimelineData": "No timeline data available. Add birth dates to members."

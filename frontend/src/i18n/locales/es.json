@@ -20,7 +20,13 @@
     "close": "Cerrar",
     "yes": "Sí",
     "no": "No",
-    "all": "Todos"
+    "all": "Todos",
+    "select": "Seleccionar",
+    "confirm": "Confirmar",
+    "settings": "Configuración",
+    "refresh": "Actualizar",
+    "deleting": "Eliminando...",
+    "familyMember": "Miembro de la familia"
   },
   "auth": {
     "login": "Iniciar sesión",

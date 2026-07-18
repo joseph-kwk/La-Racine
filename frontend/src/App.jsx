@@ -20,8 +20,9 @@ import TreeList from './components/TreeList';
 import CreateTree from './components/CreateTree';
 import TreeView from './components/TreeView';
 import AddMember from './components/AddMember';
+import EditMember from './components/EditMember';
 
-// New pages
+// Feature pages
 import MemberProfile from './components/MemberProfile';
 import AccountProfile from './components/AccountProfile';
 import Notifications from './components/Notifications';
@@ -37,46 +38,71 @@ const PublicRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
 };
 
+/** Full-page loading skeleton shown while auth state resolves */
+function AppLoadingScreen() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '1.5rem',
+      background: 'var(--gray-50, #f9fafb)',
+    }}>
+      <div style={{
+        width: 56,
+        height: 56,
+        border: '4px solid var(--gray-200, #e5e7eb)',
+        borderTopColor: 'var(--primary-green, #16a34a)',
+        borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite',
+      }} />
+      <p style={{ color: 'var(--gray-500, #6b7280)', fontSize: '1rem', fontWeight: 500 }}>
+        🌳 La Racine
+      </p>
+    </div>
+  );
+}
+
 function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return (
-      <Routes>
-        <Route path="*" element={<div />} />
-      </Routes>
-    );
+    return <AppLoadingScreen />;
   }
 
   return (
     <Routes>
-      {/* Public routes */}
-      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      {/* ── Public routes ── */}
+      <Route path="/login"    element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
-      {/* Protected routes */}
+      {/* ── Dashboard ── */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
-      {/* Account */}
+      {/* ── Account ── */}
       <Route path="/account" element={<ProtectedRoute><AccountProfile /></ProtectedRoute>} />
 
-      {/* Notifications */}
+      {/* ── Notifications ── */}
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
 
-      {/* Trees */}
-      <Route path="/trees" element={<ProtectedRoute><TreeList /></ProtectedRoute>} />
-      <Route path="/trees/new" element={<ProtectedRoute><CreateTree /></ProtectedRoute>} />
-      <Route path="/trees/:treeId" element={<ProtectedRoute><TreeView /></ProtectedRoute>} />
+      {/* ── Trees ── */}
+      <Route path="/trees"             element={<ProtectedRoute><TreeList /></ProtectedRoute>} />
+      <Route path="/trees/new"         element={<ProtectedRoute><CreateTree /></ProtectedRoute>} />
+      <Route path="/trees/:treeId"     element={<ProtectedRoute><TreeView /></ProtectedRoute>} />
       <Route path="/trees/:treeId/members/new" element={<ProtectedRoute><AddMember /></ProtectedRoute>} />
-      <Route path="/trees/:treeId/settings" element={<ProtectedRoute><TreeSettings /></ProtectedRoute>} />
+      <Route path="/trees/:treeId/settings"    element={<ProtectedRoute><TreeSettings /></ProtectedRoute>} />
 
-      {/* Member profile — dedicated full page */}
-      <Route path="/members/:memberId" element={<ProtectedRoute><MemberProfile /></ProtectedRoute>} />
+      {/* ── Members ── */}
+      <Route path="/members/:memberId"       element={<ProtectedRoute><MemberProfile /></ProtectedRoute>} />
+      <Route path="/members/:memberId/edit"  element={<ProtectedRoute><EditMember /></ProtectedRoute>} />
 
-      {/* Legacy tree route */}
-      <Route path="/tree/:id" element={<ProtectedRoute><TreeView /></ProtectedRoute>} />
+      {/* ── Legacy routes — preserved for backward compatibility ── */}
+      {/* Note: passes treeId correctly so TreeView's useParams works */}
+      <Route path="/tree/:treeId" element={<ProtectedRoute><TreeView /></ProtectedRoute>} />
 
-      {/* Default redirects */}
+      {/* ── Default redirects ── */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
     </Routes>
@@ -90,7 +116,7 @@ function App() {
         <AuthProvider>
           <ThemeProvider>
             <Router>
-              {/* NotificationProvider is inside Router (for link navigation) and inside AuthProvider (for auth state) */}
+              {/* NotificationProvider inside Router (needs Link navigation) and AuthProvider (needs auth state) */}
               <NotificationProvider>
                 <Header />
                 <LanguageSplashBanner />
