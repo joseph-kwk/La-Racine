@@ -4,17 +4,135 @@
 {% block extrastyle %}
   {{ block.super }}
   <link rel="icon" href="{% static 'core/logo.png' %}" type="image/png" />
+  <style>
+    body.login {
+      background: linear-gradient(135deg, #052e16 0%, #166534 50%, #15803d 100%) !important;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #container {
+      background: transparent !important;
+      box-shadow: none !important;
+      width: 100% !important;
+      max-width: 420px;
+    }
+    #header { display: none !important; }
+    #content { padding: 0 !important; }
+    .lr-login-wrap {
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+    }
+    .lr-login-top {
+      background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+      padding: 32px 32px 28px;
+      text-align: center;
+    }
+    .lr-login-top img {
+      height: 56px;
+      width: 56px;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      margin-bottom: 14px;
+    }
+    .lr-login-top h1 {
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+    .lr-login-top p {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    .lr-login-body {
+      padding: 28px 32px 32px;
+    }
+    .lr-login-body label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+      margin-top: 16px;
+    }
+    .lr-login-body input[type="text"],
+    .lr-login-body input[type="password"] {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 9px;
+      padding: 11px 14px;
+      font-size: 0.95rem;
+      color: #1f2937;
+      background: #f9fafb;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .lr-login-body input:focus {
+      border-color: #15803d;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(21,128,61,0.12);
+      outline: none;
+    }
+    .lr-login-body .submit-row {
+      margin-top: 24px;
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    .lr-login-body input[type="submit"] {
+      width: 100%;
+      background: #15803d !important;
+      color: #fff !important;
+      border: none !important;
+      border-radius: 9px !important;
+      padding: 12px !important;
+      font-size: 1rem !important;
+      font-weight: 700 !important;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 14px rgba(21,128,61,0.3) !important;
+    }
+    .lr-login-body input[type="submit"]:hover {
+      background: #166534 !important;
+      box-shadow: 0 6px 20px rgba(21,128,61,0.35) !important;
+    }
+    .errornote {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.875rem;
+      margin-bottom: 16px;
+    }
+    .lr-login-footer {
+      text-align: center;
+      padding: 14px 0 0;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
-<div class="lr-login">
-  <div class="lr-login-card">
-    <div class="lr-login-brand">
-      <img src="{% static 'core/logo.png' %}" alt="La Racine" class="lr-login-logo" />
-      <h1>La Racine Admin</h1>
-      <p class="lr-login-sub">Sign in to continue</p>
-    </div>
+<div class="lr-login-wrap">
+  <!-- Top branding -->
+  <div class="lr-login-top">
+    <img src="{% static 'core/logo.png' %}" alt="La Racine" />
+    <h1>La Racine</h1>
+    <p>Admin &amp; Content Management</p>
+  </div>
 
+  <!-- Login form body -->
+  <div class="lr-login-body">
     {% if form.errors and not form.non_field_errors %}
       <p class="errornote">{% translate 'Please correct the error below.' %}</p>
     {% endif %}
@@ -30,20 +148,28 @@
       {% if next %}
         <input type="hidden" name="next" value="{{ next }}">
       {% endif %}
-      <div class="form-row">
+
+      <div>
         {{ form.username.errors }}
         <label for="id_username">{% translate 'Username' %}</label>
-        {{ form.username }}
+        <input type="text" name="username" id="id_username"
+               autocomplete="username" autofocus
+               placeholder="Enter your username" />
       </div>
-      <div class="form-row">
+      <div>
         {{ form.password.errors }}
         <label for="id_password">{% translate 'Password' %}</label>
-        {{ form.password }}
+        <input type="password" name="password" id="id_password"
+               autocomplete="current-password"
+               placeholder="Enter your password" />
       </div>
+
       <div class="submit-row">
-        <input type="submit" value="{% translate 'Log in' %}" />
+        <input type="submit" value="{% translate 'Sign in' %}" />
       </div>
     </form>
+
+    <p class="lr-login-footer">La Racine Family Tree Platform · Admin Console</p>
   </div>
 </div>
 {% endblock %}

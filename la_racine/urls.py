@@ -112,7 +112,4 @@ urlpatterns = [
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
-# Admin branding
-admin.site.site_header = '🌳 La Racine Administration'
-admin.site.site_title = 'La Racine Admin'
-admin.site.index_title = 'Welcome to La Racine Admin Panel'
+# Admin branding is configured in tree/admin.py
