@@ -357,10 +357,14 @@ class FamilyMemberViewSet(viewsets.ModelViewSet):
         else:
             category = 'standard'
 
-        # Get old value
-        old_value = getattr(member, field_name, None)
-        if hasattr(old_value, 'pk'):
-            old_value = old_value.pk
+        # BUG #8 FIX: store proper JSON-serialisable value, not str()
+        old_raw = getattr(member, field_name, None)
+        if hasattr(old_raw, 'pk'):
+            old_value = old_raw.pk          # FK — store PK as int
+        elif old_raw is None:
+            old_value = None                # JSON null, not the string "None"
+        else:
+            old_value = old_raw
 
         # Should we auto-approve?
         auto_approve = False
@@ -379,7 +383,7 @@ class FamilyMemberViewSet(viewsets.ModelViewSet):
             requested_by=request.user,
             field_name=field_name,
             field_category=category,
-            old_value=str(old_value) if old_value is not None else None,
+            old_value=old_value,            # BUG #8: now proper JSON (None/int/str)
             new_value=new_value,
             reason=reason,
             status='auto_approved' if auto_approve else 'pending',
@@ -452,8 +456,14 @@ class FamilyRelationshipViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         from_member = serializer.validated_data.get('from_member')
+        to_member   = serializer.validated_data.get('to_member')
+        # BUG #7 FIX: prevent linking members from different trees
+        if from_member and to_member and from_member.tree_id != to_member.tree_id:
+            from rest_framework.exceptions import ValidationError as VE
+            raise VE('Both members must belong to the same tree.')
         assert_tree_role(self.request.user, from_member.tree, ['owner', 'editor'])
         serializer.save(created_by=self.request.user)
+
 
 
 # ---------------------------------------------------------------------------
@@ -481,7 +491,14 @@ class ChangeRequestViewSet(viewsets.ModelViewSet):
         ).distinct()
 
     def perform_create(self, serializer):
+        # BUG #9 FIX: verify the requester can access this member's tree
+        member = serializer.validated_data.get('member')
+        if member and not self.request.user.is_staff:
+            role = get_tree_role(self.request.user, member.tree)
+            if role not in ('owner', 'editor', 'validator', 'viewer'):
+                raise PermissionDenied('You do not have access to this tree.')
         serializer.save(requested_by=self.request.user)
+
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -631,8 +648,12 @@ class FamilyUpdateViewSet(viewsets.ModelViewSet):
         like, created = UpdateLike.objects.get_or_create(update=update, user=request.user)
         if not created:
             like.delete()
-            return Response({'liked': False, 'likes_count': update.likes.count()})
-        return Response({'liked': True, 'likes_count': update.likes.count()}, status=status.HTTP_201_CREATED)
+            # BUG #2/#18 FIX: fresh count from DB, not stale update object
+            fresh_count = UpdateLike.objects.filter(update=update).count()
+            return Response({'liked': False, 'likes_count': fresh_count})
+        fresh_count = UpdateLike.objects.filter(update=update).count()
+        return Response({'liked': True, 'likes_count': fresh_count}, status=status.HTTP_201_CREATED)
+
 
     @action(detail=True, methods=['post'])
     def comment(self, request, pk=None):
@@ -709,7 +730,8 @@ class TreeInvitationViewSet(viewsets.ModelViewSet):
 
         # If user is authenticated, grant them access
         if request.user.is_authenticated:
-            perm, _ = TreePermission.objects.get_or_create(
+            # BUG #12 FIX: use update_or_create so existing permissions get upgraded
+            perm, created = TreePermission.objects.update_or_create(
                 tree=invitation.tree,
                 user=request.user,
                 defaults={
@@ -718,9 +740,9 @@ class TreeInvitationViewSet(viewsets.ModelViewSet):
                     'invited_by': invitation.invited_by,
                 }
             )
-            if perm.status != 'active':
+            if not perm.status == 'active':
                 perm.status = 'active'
-                perm.save()
+                perm.save(update_fields=['status'])
 
         return Response({
             'message': 'Invitation accepted.',
@@ -770,13 +792,14 @@ def _apply_change(member, field_name, new_value):
             setattr(member, field_name + '_id', None)
         else:
             setattr(member, field_name + '_id', int(new_value))
+        # BUG #4 FIX: is_alive sync was inside wrong branch — moved here
+        if field_name == 'death_date':
+            member.is_alive = (new_value is None)
     elif hasattr(member, field_name):
         setattr(member, field_name, new_value)
-        # Keep is_alive in sync
-        if field_name == 'death_date':
-            member.is_alive = new_value is None
 
     member.save()
+
 
 
 def _assert_can_review(user, cr):

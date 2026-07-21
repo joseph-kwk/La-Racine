@@ -377,7 +377,7 @@ class FamilyMember(models.Model):
             delta_years = end.year - born.year - (
                 (end.month, end.day) < (born.month, born.day)
             )
-            is_exact = (bd.precision == 'day')
+            is_exact = (bd.precision == 'exact')
             return (max(0, delta_years), is_exact)
         except Exception:
             return None

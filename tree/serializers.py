@@ -172,23 +172,7 @@ class FamilyMemberSerializer(serializers.ModelSerializer):
             return f'{years} years old'
         return f'~{years} years old'
 
-    def validate(self, attrs):
-        request = self.context.get('request')
-        user = getattr(request, 'user', None)
-        tree = attrs.get('tree') or getattr(self.instance, 'tree', None)
 
-        if user and not getattr(user, 'is_staff', False) and tree:
-            has_permission = TreePermission.objects.filter(
-                tree=tree,
-                user=user,
-                role__in=['owner', 'editor', 'validator'],
-                status='active'
-            ).exists()
-            if not has_permission:
-                raise serializers.ValidationError(
-                    'You do not have permission to edit this tree.'
-                )
-        return attrs
 
 
 class FamilyMemberLightSerializer(serializers.ModelSerializer):

@@ -5,9 +5,10 @@ Handles registration, login responses, current user info,
 and user profile CRUD.
 """
 
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, serializers as drf_serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import User
 from rest_framework.serializers import ModelSerializer, CharField
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -26,9 +27,10 @@ class RegisterSerializer(ModelSerializer):
         }
 
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise Exception('A user with this email already exists.')
-        return value
+        # BUG #1 FIX: was `raise Exception(...)` which DRF treated as a 500
+        if User.objects.filter(email__iexact=value).exists():
+            raise ValidationError('A user with this email already exists.')
+        return value.lower()
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -96,8 +98,21 @@ class MeView(APIView):
         """Allow updating basic user fields (first_name, last_name, email)."""
         user = request.user
         allowed = ('first_name', 'last_name', 'email')
+        new_email = request.data.get('email')
+
+        # BUG #11 FIX: check email uniqueness before accepting the PATCH
+        if new_email and new_email.lower() != user.email.lower():
+            if User.objects.filter(email__iexact=new_email).exclude(pk=user.pk).exists():
+                return Response(
+                    {'email': 'A user with this email already exists.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
         for field in allowed:
             if field in request.data:
-                setattr(user, field, request.data[field])
+                value = request.data[field]
+                if field == 'email':
+                    value = value.lower()
+                setattr(user, field, value)
         user.save()
         return self.get(request)

@@ -28,12 +28,22 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             return qs
         return qs.filter(user=user)
 
+    def perform_create(self, serializer):
+        # BUG #6 FIX: force profile to belong to requesting user only
+        from rest_framework.exceptions import PermissionDenied
+        if not self.request.user.is_staff:
+            # Prevent non-staff from creating profiles for other users
+            if UserProfile.objects.filter(user=self.request.user).exists():
+                raise PermissionDenied('You already have a profile. Use PATCH to update it.')
+        serializer.save(user=self.request.user)
+
     def perform_update(self, serializer):
         # Users can only update their own profile
         if self.get_object().user != self.request.user and not self.request.user.is_staff:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied('You can only edit your own profile.')
         serializer.save()
+
 
     @action(detail=False, methods=['get', 'patch'], url_path='me')
     def me(self, request):

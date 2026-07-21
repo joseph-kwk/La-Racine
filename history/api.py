@@ -69,4 +69,5 @@ class HistoryEventViewSet(viewsets.ModelViewSet):
         ).distinct()
 
     def perform_create(self, serializer):
+        # HistoryEvent (legacy) has no added_by field; nothing extra to inject
         serializer.save()

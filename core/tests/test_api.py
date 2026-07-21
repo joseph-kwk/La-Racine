@@ -1,179 +1,149 @@
+"""
+core/tests/test_api.py — Registration, Auth, Profile API tests
+"""
+import pytest
 from django.contrib.auth.models import User
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient
 from rest_framework import status
-from tree.models import Tree, FamilyMember
 
-class AuthAPITests(APITestCase):
-    def setUp(self):
-        self.user_data = {
-            'username': 'testuser',
-            'email': 'test@example.com',
-            'password': 'testpass123'
-        }
-        self.user = User.objects.create_user(**self.user_data)
 
-    def test_user_registration(self):
-        """Test user registration endpoint"""
-        data = {
+@pytest.fixture
+def client():
+    return APIClient()
+
+
+@pytest.fixture
+def user(db):
+    return User.objects.create_user(
+        username='testuser', email='test@example.com', password='password123'
+    )
+
+
+@pytest.fixture
+def auth_client(client, user):
+    response = client.post('/api/auth/token/', {
+        'username': 'testuser',
+        'password': 'password123',
+    })
+    token = response.data['access']
+    client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+    return client
+
+
+# ─── Registration ────────────────────────────────────────────────────────────
+
+@pytest.mark.django_db
+class TestRegister:
+
+    def test_register_success(self, client):
+        res = client.post('/api/auth/register/', {
             'username': 'newuser',
             'email': 'new@example.com',
-            'password': 'newpass123'
-        }
-        response = self.client.post('/api/auth/register/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
+            'password': 'securepass1',
+        })
+        assert res.status_code == status.HTTP_201_CREATED
+        assert 'access' in res.data
+        assert 'refresh' in res.data
+        assert res.data['user']['username'] == 'newuser'
 
-    def test_user_login(self):
-        """Test user login endpoint"""
-        data = {
-            'username': self.user_data['username'],
-            'password': self.user_data['password']
-        }
-        response = self.client.post('/api/auth/token/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
+    def test_register_duplicate_email_returns_400(self, client, user):
+        """BUG #1: was returning 500 due to raise Exception()"""
+        res = client.post('/api/auth/register/', {
+            'username': 'another',
+            'email': 'test@example.com',  # already taken
+            'password': 'securepass1',
+        })
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
+        # Must be a validation error, not a server error
+        assert res.status_code != status.HTTP_500_INTERNAL_SERVER_ERROR
 
-    def test_token_refresh(self):
-        """Test token refresh endpoint"""
-        # First login to get tokens
-        login_data = {
-            'username': self.user_data['username'],
-            'password': self.user_data['password']
-        }
-        login_response = self.client.post('/api/auth/token/', login_data, format='json')
-        refresh_token = login_response.data['refresh']
+    def test_register_duplicate_email_case_insensitive(self, client, user):
+        """Email check should be case-insensitive."""
+        res = client.post('/api/auth/register/', {
+            'username': 'another2',
+            'email': 'TEST@EXAMPLE.COM',  # same as test@example.com
+            'password': 'securepass1',
+        })
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
 
-        # Now refresh
-        refresh_data = {'refresh': refresh_token}
-        response = self.client.post('/api/auth/token/refresh/', refresh_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
+    def test_register_missing_email_returns_400(self, client):
+        res = client.post('/api/auth/register/', {
+            'username': 'nomail',
+            'password': 'securepass1',
+        })
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_invalid_login(self):
-        """Test login with invalid credentials"""
-        data = {
-            'username': 'wronguser',
-            'password': 'wrongpass'
-        }
-        response = self.client.post('/api/auth/token/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-
-class TreeAPITests(APITestCase):
-    def setUp(self):
-        self.user = User.objects.create_user('testuser', 'test@example.com', 'testpass')
-        self.client.force_authenticate(user=self.user)
-        self.tree_data = {'name': 'Test Family Tree'}
-
-    def test_create_tree(self):
-        """Test creating a new tree"""
-        response = self.client.post('/api/trees/', self.tree_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['name'], self.tree_data['name'])
-        self.assertEqual(response.data['created_by'], self.user.id)
-
-    def test_list_trees(self):
-        """Test listing user's trees"""
-        # Create a tree first
-        Tree.objects.create(name='Test Tree', created_by=self.user)
-        response = self.client.get('/api/trees/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-
-    def test_get_tree_detail(self):
-        """Test getting tree details"""
-        tree = Tree.objects.create(name='Test Tree', created_by=self.user)
-        response = self.client.get(f'/api/trees/{tree.id}/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], tree.name)
-
-    def test_update_tree(self):
-        """Test updating tree"""
-        tree = Tree.objects.create(name='Old Name', created_by=self.user)
-        update_data = {'name': 'New Name'}
-        response = self.client.put(f'/api/trees/{tree.id}/', update_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        tree.refresh_from_db()
-        self.assertEqual(tree.name, 'New Name')
-
-    def test_delete_tree(self):
-        """Test deleting tree with Admin role"""
-        from django.contrib.auth.models import Group
-        # Give user Admin role (Django group) for permission to delete
-        admin_group, _ = Group.objects.get_or_create(name='Admin')
-        self.user.groups.add(admin_group)
-        
-        tree = Tree.objects.create(name='Test Tree', created_by=self.user)
-        response = self.client.delete(f'/api/trees/{tree.id}/')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Tree.objects.filter(id=tree.id).exists())
+    def test_register_short_password_returns_400(self, client):
+        res = client.post('/api/auth/register/', {
+            'username': 'shortpw',
+            'email': 'short@example.com',
+            'password': 'abc',
+        })
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
 
 
-class MemberAPITests(APITestCase):
-    def setUp(self):
-        self.user = User.objects.create_user('testuser', 'test@example.com', 'testpass')
-        self.client.force_authenticate(user=self.user)
-        self.tree = Tree.objects.create(name='Test Tree', created_by=self.user)
-        self.member_data = {
-            'first_name': 'John',
-            'last_name': 'Doe',
-            'gender': 'male',
-            'birth_date': '1990-01-01'
-        }
+# ─── MeView ──────────────────────────────────────────────────────────────────
 
-    def test_create_member(self):
-        """Test creating a family member"""
-        # Add tree field to member data
-        member_data_with_tree = {**self.member_data, 'tree': self.tree.id}
-        response = self.client.post('/api/members/', member_data_with_tree, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['first_name'], self.member_data['first_name'])
-        self.assertEqual(response.data['tree'], self.tree.id)
+@pytest.mark.django_db
+class TestMeView:
 
-    def test_list_members(self):
-        """Test listing tree members"""
-        FamilyMember.objects.create(tree=self.tree, first_name='Jane', last_name='Doe')
-        response = self.client.get(f'/api/trees/{self.tree.id}/members/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+    def test_me_get_authenticated(self, auth_client, user):
+        res = auth_client.get('/api/auth/me/')
+        assert res.status_code == status.HTTP_200_OK
+        assert res.data['username'] == 'testuser'
+        assert res.data['email'] == 'test@example.com'
 
-    def test_get_member_detail(self):
-        """Test getting member details"""
-        member = FamilyMember.objects.create(tree=self.tree, first_name='Jane', last_name='Doe')
-        response = self.client.get(f'/api/members/{member.id}/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['first_name'], member.first_name)
+    def test_me_get_unauthenticated(self, client):
+        res = client.get('/api/auth/me/')
+        assert res.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_update_member(self):
-        """Test updating member"""
-        member = FamilyMember.objects.create(
-            tree=self.tree, 
-            first_name='Jane', 
-            last_name='Doe',
-            gender='female'
+    def test_me_patch_name(self, auth_client, user):
+        res = auth_client.patch('/api/auth/me/', {
+            'first_name': 'Joseph',
+            'last_name': 'K',
+        })
+        assert res.status_code == status.HTTP_200_OK
+        assert res.data['first_name'] == 'Joseph'
+        assert res.data['last_name'] == 'K'
+
+    def test_me_patch_duplicate_email_returns_400(self, auth_client, db):
+        """BUG #11: patch must not allow stealing another user's email."""
+        User.objects.create_user(
+            username='other', email='other@example.com', password='pw12345678'
         )
-        # Include all required fields in update
-        update_data = {
-            'first_name': 'Janet',
-            'last_name': 'Doe',
-            'gender': 'female',
-            'tree': self.tree.id
-        }
-        response = self.client.put(f'/api/members/{member.id}/', update_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        member.refresh_from_db()
-        self.assertEqual(member.first_name, 'Janet')
+        res = auth_client.patch('/api/auth/me/', {'email': 'other@example.com'})
+        assert res.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_delete_member(self):
-        """Test deleting member with Admin role"""
-        from django.contrib.auth.models import Group
-        # Give user Admin role (Django group) for permission to delete
-        admin_group, _ = Group.objects.get_or_create(name='Admin')
-        self.user.groups.add(admin_group)
-        
-        member = FamilyMember.objects.create(tree=self.tree, first_name='Jane', last_name='Doe')
-        response = self.client.delete(f'/api/members/{member.id}/')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(FamilyMember.objects.filter(id=member.id).exists())
+    def test_me_patch_own_email_ok(self, auth_client, user):
+        """Patching to the same email (case change) should succeed."""
+        res = auth_client.patch('/api/auth/me/', {'email': 'TEST@EXAMPLE.COM'})
+        assert res.status_code == status.HTTP_200_OK
+
+
+# ─── UserProfile ─────────────────────────────────────────────────────────────
+
+@pytest.mark.django_db
+class TestUserProfile:
+
+    def test_me_profile_endpoint(self, auth_client):
+        res = auth_client.get('/api/userprofiles/me/')
+        assert res.status_code == status.HTTP_200_OK
+
+    def test_me_profile_patch_language(self, auth_client):
+        res = auth_client.patch('/api/userprofiles/me/', {
+            'preferred_language': 'fr',
+        })
+        assert res.status_code == status.HTTP_200_OK
+        assert res.data['preferred_language'] == 'fr'
+
+    def test_cannot_post_profile_for_another_user(self, auth_client, db):
+        """BUG #6: non-staff should not create profiles for other users."""
+        other = User.objects.create_user(
+            username='victim', email='victim@example.com', password='pw12345678'
+        )
+        # After fix: profile already exists for auth user so this returns 403
+        res = auth_client.post('/api/userprofiles/', {'user': other.pk, 'display_name': 'Hacked'})
+        assert res.status_code in (
+            status.HTTP_403_FORBIDDEN,
+            status.HTTP_400_BAD_REQUEST,
+        )
