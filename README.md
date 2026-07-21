@@ -1,267 +1,187 @@
-# 🌳 La Racine - Family Tree Application
+# 🌳 La Racine — World-Class Family Tree Application
 
-A comprehensive family tree application that allows users to collaboratively build, view, and interact with their family history. Built with Django REST Framework backend and React frontend.
+[![Django](https://img.shields.io/badge/Django-5.2-092E20?style=flat-square&logo=django)](https://djangoproject.com)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-7.0-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-## 🎯 Project Overview
+**La Racine** ("The Root" in French) is a world-class, multi-lingual family genealogy platform designed for collaborative family tree building, history preservation, and change governance. Built with a robust Django REST Framework backend and a modern React frontend.
 
-**La Racine** (meaning "The Root" in French) is a secure platform where authorized users can:
+---
 
-- 🔐 Register and manage family trees with role-based permissions
-- 👥 Add/edit family members with detailed profiles, photos, and biographies
-- 🌐 View interactive tree visualizations and timelines
-- 🔔 Receive event-based notifications (birthdays, anniversaries, updates)
-- 📍 Track family locations and migration histories
-- 🎨 Celebrate shared heritage with customizable themes
+## 🎯 Key Features
 
-## 🏗️ Architecture
+- **🌳 Interactive Tree Visualization**: Dynamic, responsive family graph visualization with detailed member inspection, relationship links, search, filtering, and custom family themes.
+- **🛡️ Governance & Change Requests**: Fine-grained change management workflow. Edits to critical fields (birth/death dates, relationships) generate Change Requests requiring review by tree owners or assigned validators.
+- **🌐 5-Language Internationalization (i18n)**: Native multi-language support out-of-the-box:
+  - 🇺🇸 English (`en`)
+  - 🇫🇷 French (`fr`)
+  - 🇪🇸 Spanish (`es`)
+  - 🇮🇳 Hindi (`hi`)
+  - 🇨🇳 Chinese (`zh`)
+  - *Includes automatic browser locale/region detection and seamless language switching.*
+- **👑 Custom Admin Content Management Panel**: Custom-branded Django Admin panel with dark-emerald styling, color-coded status badges, photo thumbnails, bulk approval/rejection actions, and interactive metrics.
+- **🔔 Multi-Channel Notifications**: Real-time in-app notification center for birthdays, anniversaries, change approvals, member updates, and tree invitations.
+- **🖼️ Media & Photo Tagging**: High-resolution photo gallery with percentage-coordinate tagging for family members.
+- **📣 Social Updates & Feed**: Tree news, stories, and milestones feed with likes, comments, and member tagging.
+- **🔒 Privacy & GDPR Consent**: Member-level and field-level privacy controls (Public, Family Only, Close Family, Private) with living person consent tracking.
 
-### Backend (Django)
-- **Framework**: Django 5.2.5 + Django REST Framework
-- **Database**: SQLite (development) / PostgreSQL (production)
-- **Authentication**: JWT tokens via djangorestframework-simplejwt
-- **Media Storage**: Cloudinary integration
-- **API**: RESTful endpoints with filtering, search, and pagination
+---
 
-### Frontend (React)
-- **Framework**: React 19 with Vite
-- **Styling**: TailwindCSS v3
-- **Routing**: React Router DOM
-- **State Management**: Context API for authentication
-- **HTTP Client**: Axios for API communication
-- **Tree Visualization**: React Flow (planned)
+## 🏗️ Technical Architecture
 
-## 📁 Project Structure
+### Backend Stack
+- **Framework**: Django 5.2 + Django REST Framework 3.16
+- **Auth**: JWT Authentication (`djangorestframework-simplejwt`)
+- **Database**: SQLite (development) / PostgreSQL compatible
+- **Testing**: `pytest` + `pytest-django` test suite (47+ tests passing)
+- **Static Assets**: Django Staticfiles with WhiteNoise support
+
+### Frontend Stack
+- **Framework**: React 19 + Vite 7
+- **Styling**: TailwindCSS v3 (Emerald/Forest theme design system)
+- **i18n**: i18next with browser language detection
+- **State & Router**: React Router DOM v7 & Context API
+
+---
+
+## 📁 Repository Structure
 
 ```
-la_racine/
-├── backend/
-│   └── requirements.txt         # Backend dependencies
-├── core/                        # User management & authentication
-│   ├── models.py               # UserProfile model
-│   ├── serializers.py          # API serializers
-│   ├── views.py                # Authentication views
-│   └── urls.py                 # Core URLs
-├── tree/                       # Family tree models & logic
-│   ├── models.py               # Tree, FamilyMember, Update models
-│   ├── serializers.py          # Tree API serializers
-│   ├── views.py                # Tree management views
-│   └── urls.py                 # Tree URLs
-├── profiles/                   # Member profiles & media
-├── notifications/              # Birthday & event notifications
-├── history/                    # Timeline & life events
-├── frontend/
+La-Racine/
+├── core/                        # Authentication, UserProfile & custom admin templates
+│   ├── admin.py                # User & UserProfile admin configuration
+│   ├── api.py                  # UserProfile ViewSets & claim member endpoint
+│   ├── models.py               # UserProfile model with notification preferences
+│   ├── serializers.py          # DRF serializers for user profiles
+│   ├── static/core/admin.css   # Custom admin CSS styling
+│   ├── templates/admin/        # Custom admin index & login templates
+│   └── views.py                # Registration & /me endpoints
+├── tree/                       # Core genealogy models & API
+│   ├── admin.py                # Tree, FamilyMember, ChangeRequest & Photo admin
+│   ├── api.py                  # ViewSets for Tree, Member, ChangeRequest & Invitations
+│   ├── models.py               # FuzzyDate, Tree, FamilyMember, FamilyRelationship, etc.
+│   ├── serializers.py          # Complete DRF serializers for tree data
+│   └── theme_presets.py        # Color palette presets for family trees
+├── notifications/              # Event-driven notification system
+│   ├── admin.py                # Notification admin & delivery tracking
+│   ├── api.py                  # Notification list, unread count & mark-as-read
+│   ├── models.py               # Notification & NotificationBatch models
+│   └── signals.py              # Signals for birthday/death/member events
+├── history/                    # Life events & audit logging
+│   ├── admin.py                # Audit log & LifeEvent admin
+│   ├── api.py                  # LifeEvent & AuditLog ViewSets
+│   └── models.py               # LifeEvent & immutable AuditLog models
+├── frontend/                   # React frontend application
 │   ├── src/
-│   │   ├── components/         # Login, Register, TreeView, etc.
-│   │   ├── context/            # AuthContext for global state
-│   │   ├── services/           # API service layer
-│   │   └── App.jsx             # Main application component
-│   ├── package.json
-│   └── vite.config.js
-├── la_racine/                  # Django project configuration
-│   ├── settings.py             # Django settings
-│   └── urls.py                 # Main URL configuration
-├── planning.txt                # Detailed project planning document
-└── README.md                   # This file
+│   │   ├── components/         # TreeView, Dashboard, Admin, Profile, etc.
+│   │   ├── context/            # AuthContext, LanguageContext, ThemeContext
+│   │   ├── i18n/               # Translation dictionaries (en, fr, es, hi, zh)
+│   │   ├── services/           # Axios API client services
+│   │   └── App.jsx             # Main router component
+│   └── package.json
+├── la_racine/                  # Django project root settings & URLs
+│   ├── settings.py             # Settings configuration
+│   └── urls.py                 # Core routing
+├── pytest.ini                  # Pytest configuration
+├── manage.py                   # Django CLI
+└── README.md                   # Project documentation
 ```
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Python 3.12+
-- Node.js 18+
-- npm or yarn
+- **Python**: 3.10+
+- **Node.js**: 18+
 
-### Backend Setup
+### 1. Backend Setup
 
-1. **Navigate to project root:**
-   ```bash
-   cd La-Racine
-   ```
+```bash
+# Clone repository
+git clone https://github.com/joseph-kwk/La-Racine.git
+cd La-Racine
 
-2. **Activate virtual environment:**
-   ```bash
-   # Windows
-   .venv\Scripts\activate
-   
-   # macOS/Linux
-   source .venv/bin/activate
-   ```
+# Create and activate virtual environment
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# Linux/macOS:
+source .venv/bin/activate
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Install dependencies
+pip install -r requirements.txt
 
-4. **Run migrations:**
-   ```bash
-   python manage.py migrate
-   ```
+# Run database migrations
+python manage.py migrate
 
-5. **Create superuser (optional):**
-   ```bash
-   python manage.py createsuperuser
-   ```
+# Start backend dev server
+python manage.py runserver
+```
+Backend API will be live at `http://127.0.0.1:8000/`.
 
-6. **Start development server:**
-   ```bash
-   python manage.py runserver
-   ```
-   
-   Backend will be available at: `http://127.0.0.1:8000`
+### 2. Frontend Setup
 
-### Frontend Setup
+```bash
+# Open a new terminal and navigate to frontend
+cd frontend
 
-1. **Navigate to frontend directory:**
-   ```bash
-   cd frontend
-   ```
+# Install npm dependencies
+npm install
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Start development server:**
-   ```bash
-   npm run dev
-   ```
-   
-   Frontend will be available at: `http://localhost:5173`
-
-## 📊 Database Models
-
-### Core Models
-- **UserProfile**: Extended user information (nickname, photo, location, birthday)
-- **Tree**: Family tree container (name, creator, creation date)
-- **FamilyMember**: Individual family member with relationships
-- **Update**: Timeline updates and life events
-- **Notification**: System notifications for birthdays and events
-
-### Key Relationships
-- Users can create multiple trees
-- Family members belong to trees with parent/child/spouse relationships
-- Updates track life events and changes
-- Role-based permissions control access levels
-
-## 🔐 User Roles & Permissions
-
-| Role | Capabilities |
-|------|-------------|
-| **Superuser** | Full access to all trees, users, audit logs, system settings |
-| **Tree Admin** | Create/edit tree structure, invite/manage contributors |
-| **Contributor** | Add/edit members, biographies, updates, media |
-| **Viewer** | View tree, member info, comment if allowed |
-
-## 🛣️ Roadmap
-
-### Phase 1: MVP ✅
-- [x] Authentication system with JWT
-- [x] Basic tree structure with CRUD operations
-- [x] Family member profiles with relationships
-- [x] RESTful API with proper permissions
-- [x] Frontend routing and authentication flow
-- [ ] **CURRENT**: Fix TailwindCSS styling
-
-### Phase 2: Enhanced Features
-- [ ] Interactive tree visualization with React Flow
-- [ ] Advanced search and filtering
-- [ ] Notification system for birthdays/events
-- [ ] Photo galleries and media management
-- [ ] Export functionality (PDF, GEDCOM)
-
-### Phase 3: Advanced Features
-- [ ] Location mapping with migration paths
-- [ ] Audio memories and voice notes
-- [ ] Mobile PWA with offline support
-- [ ] Multi-language support
-- [ ] Advanced privacy controls
-
-## 🔧 API Endpoints
-
-### Authentication
-- `POST /api/auth/register/` - User registration
-- `POST /api/auth/login/` - User login
-- `POST /api/auth/refresh/` - Token refresh
-- `POST /api/auth/logout/` - User logout
-
-### Trees
-- `GET /api/trees/` - List user's trees
-- `POST /api/trees/` - Create new tree
-- `GET /api/trees/{id}/` - Get tree details
-- `PUT /api/trees/{id}/` - Update tree
-- `DELETE /api/trees/{id}/` - Delete tree
-
-### Family Members
-- `GET /api/trees/{tree_id}/members/` - List tree members
-- `POST /api/trees/{tree_id}/members/` - Add new member
-- `GET /api/members/{id}/` - Get member details
-- `PUT /api/members/{id}/` - Update member
-- `DELETE /api/members/{id}/` - Delete member
-
-## 🚨 Current Issues & Fixes Needed
-
-### P0 - Critical Issues
-1. **✅ RESOLVED**: TailwindCSS configuration - Downgraded to v3, added PostCSS config
-2. **✅ RESOLVED**: Missing backend dependencies - Installed via pip
-3. **🔄 IN PROGRESS**: Backend server startup errors
-
-### P1 - High Priority
-1. **Tree visualization**: Need to implement React Flow for interactive tree display
-2. **API testing**: Need comprehensive API endpoint testing
-3. **Error handling**: Frontend needs better error boundaries and validation
-4. **Media upload**: Configure Cloudinary properly for image uploads
-
-### P2 - Medium Priority
-1. **Responsive design**: Mobile-first design improvements needed
-2. **Performance**: API pagination and caching
-3. **Testing**: Unit and integration tests for both frontend and backend
-4. **Documentation**: API documentation with Swagger/OpenAPI
-
-### P3 - Nice to Have
-1. **Theme system**: Multiple color schemes and cultural themes
-2. **Advanced search**: Full-text search across family members
-3. **Data export**: GEDCOM and PDF export functionality
-4. **Accessibility**: WCAG compliance improvements
-
-## 🛠️ Development Guidelines
-
-### Code Quality
-- Follow PEP 8 for Python code
-- Use ESLint and Prettier for JavaScript/React
-- Write meaningful commit messages
-- Add JSDoc comments for complex functions
-
-### Security
-- Never commit sensitive credentials
-- Use environment variables for configuration
-- Validate all user inputs
-- Implement proper CORS policies
-
-### Performance
-- Optimize database queries with select_related/prefetch_related
-- Implement proper caching strategies
-- Use lazy loading for images and components
-- Monitor bundle size and API response times
-
-## 📝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Django and React communities for excellent documentation
-- TailwindCSS for beautiful, utility-first styling
-- React Flow for tree visualization capabilities
-- Cloudinary for media storage solutions
+# Start Vite dev server
+npm run dev
+```
+Frontend Web App will be live at `http://localhost:5173/`.
 
 ---
 
-**Status**: 🚧 In Development | **Last Updated**: August 6, 2025 | **Version**: 0.1.0-alpha
+## 🧪 Testing & Verification
+
+### Run Backend Tests
+
+```bash
+# Run pytest test suite (47+ tests)
+pytest
+
+# Run Django system check
+python manage.py check
+```
+
+### Build Frontend Production Assets
+
+```bash
+cd frontend
+npm run build
+```
+
+---
+
+## 🔑 Key API Endpoints
+
+### Authentication & Profile
+- `POST /api/auth/register/` — Register new user
+- `POST /api/auth/token/` — Obtain JWT access/refresh token
+- `GET/PATCH /api/auth/me/` — Retrieve or update current user profile
+- `GET/PATCH /api/userprofiles/me/` — Get/update user settings & language preference
+
+### Tree & Family Members
+- `GET/POST /api/trees/` — List or create family trees
+- `GET/POST /api/members/` — List or create family members
+- `POST /api/members/{id}/propose-change/` — Propose change request
+- `POST /api/relationships/` — Create family relationship link
+
+### Notifications & Change Governance
+- `GET /api/notifications/` — User notifications list
+- `GET /api/notifications/unread-count/` — Unread badge count
+- `POST /api/notifications/mark-all-read/` — Mark all in-app notifications read
+- `POST /api/change-requests/{id}/approve/` — Approve change request
+- `POST /api/change-requests/{id}/reject/` — Reject change request
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for details.
