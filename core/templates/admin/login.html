@@ -72,12 +72,24 @@
       padding: 36px 32px 30px;
       text-align: center;
     }
-    .lr-login-top img {
-      height: 60px;
-      width: 60px;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    .lr-logo-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 68px;
+      height: 68px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 7px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25), 0 0 0 4px rgba(255,255,255,0.2);
       margin-bottom: 14px;
+      box-sizing: border-box;
+    }
+    .lr-logo-badge img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 10px;
     }
     .lr-login-top h1 {
       color: #fff !important;
@@ -168,7 +180,9 @@
 <div class="lr-login-wrap">
   <!-- Top branding -->
   <div class="lr-login-top">
-    <img src="{% static 'core/logo.png' %}" alt="La Racine" />
+    <div class="lr-logo-badge">
+      <img src="{% static 'core/logo.png' %}" alt="La Racine" />
+    </div>
     <h1>La Racine</h1>
     <p>Admin &amp; Content Management</p>
   </div>

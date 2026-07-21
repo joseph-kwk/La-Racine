@@ -12,7 +12,9 @@
 {% block branding %}
   <div class="lr-admin-brand">
     <a href="{% url 'admin:index' %}" class="lr-brand-link">
-      <img src="{% static 'core/logo.png' %}" alt="La Racine" class="lr-brand-logo" />
+      <span class="lr-header-logo-badge">
+        <img src="{% static 'core/logo.png' %}" alt="La Racine" class="lr-brand-logo" />
+      </span>
       <h1 id="site-name">La Racine</h1>
     </a>
   </div>
