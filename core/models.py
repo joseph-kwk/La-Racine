@@ -4,7 +4,7 @@ core/models.py — User Profile & Account Extension
 Extends Django's built-in User model with:
 - Display preferences (name, avatar, language, timezone, theme)
 - Link to a FamilyMember record ("claiming" one's own profile)
-- Notification preferences
+- Smart Notification preferences (email reserved for critical approvals & invites by default)
 - Account verification state
 """
 
@@ -32,7 +32,7 @@ class UserProfile(models.Model):
     ]
 
     DIGEST_CHOICES = [
-        ('instant', 'Instant'),
+        ('instant', 'Instant (Important Only)'),
         ('daily',   'Daily Digest'),
         ('weekly',  'Weekly Digest'),
         ('never',   'Never'),
@@ -73,7 +73,6 @@ class UserProfile(models.Model):
     )
 
     # Link to the FamilyMember record this user "is"
-    # (set when user claims their profile in the tree)
     linked_member = models.OneToOneField(
         'tree.FamilyMember',
         on_delete=models.SET_NULL,
@@ -87,13 +86,30 @@ class UserProfile(models.Model):
     is_phone_verified = models.BooleanField(default=False)
     phone = models.CharField(max_length=30, blank=True)
 
-    # Notification preferences
-    notify_birthdays_email = models.BooleanField(default=True)
+    # Smart Notification preferences:
+    # Critical actionable items (change approvals, invitations) default to True.
+    # Casual/social updates (birthdays, photo tags, new member additions) default to False for email (In-App only).
+    notify_invitations_email = models.BooleanField(
+        default=True,
+        help_text='Receive emails when invited to join a family tree'
+    )
+    notify_change_requests_email = models.BooleanField(
+        default=True,
+        help_text='Receive emails for pending change requests needing your approval'
+    )
+    notify_birthdays_email = models.BooleanField(
+        default=False,
+        help_text='Receive emails for family birthdays (In-App notification always active)'
+    )
     notify_birthdays_push = models.BooleanField(default=True)
-    notify_new_member_email = models.BooleanField(default=True)
-    notify_change_requests_email = models.BooleanField(default=True)
-    notify_photo_tags_email = models.BooleanField(default=True)
-    notify_invitations_email = models.BooleanField(default=True)
+    notify_new_member_email = models.BooleanField(
+        default=False,
+        help_text='Receive emails when new members are added'
+    )
+    notify_photo_tags_email = models.BooleanField(
+        default=False,
+        help_text='Receive emails when tagged in a photo'
+    )
     digest_frequency = models.CharField(
         max_length=10, choices=DIGEST_CHOICES, default='instant'
     )
