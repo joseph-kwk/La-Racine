@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import TreeThemeProvider from './TreeThemeProvider';
 import { treeAPI } from '../services/api';
@@ -12,7 +12,7 @@ import Timeline from './Timeline';
 
 const GENDER_ICONS = { male: '👨', female: '👩', non_binary: '⚧', unknown: '👤' };
 
-const MemberCard = ({ member, treeId }) => {
+const MemberCard = ({ member }) => {
   const displayDate = (detail) => {
     if (!detail) return null;
     return detail.display || detail.display_text || detail.date?.split('-')[0] || null;
@@ -88,6 +88,7 @@ const TreeView = () => {
       }
     };
     fetchTreeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [treeId]);
 
   const filtered = search.trim()
@@ -201,9 +202,9 @@ const TreeView = () => {
           </Link>
         </div>
       ) : viewMode === 'tree' ? (
-        <FamilyTree members={members} onMemberClick={(m) => {}} />
+        <FamilyTree members={members} onMemberClick={() => {}} />
       ) : viewMode === 'timeline' ? (
-        <Timeline members={members} onMemberClick={(m) => {}} />
+        <Timeline members={members} onMemberClick={() => {}} />
       ) : (
         <div className="tree-view__members-grid">
           {filtered.length === 0 ? (

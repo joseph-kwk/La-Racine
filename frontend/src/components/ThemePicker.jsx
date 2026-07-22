@@ -16,7 +16,7 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { PRESETS_BY_REGION, PRESET_MAP, DEFAULT_PRESET, resolveTheme } from '../data/themePresets';
-import { treeAPI } from '../services/api';
+
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -51,7 +51,7 @@ function UpdateCard({ update, onLike, onCommentPost }) {
     } finally {
       setLoadingComments(false);
     }
-  }, [update.id, comments.length]);
+  }, [update.id, comments.length, loadingComments]);
 
   const handleToggleComments = () => {
     setShowComments(prev => {

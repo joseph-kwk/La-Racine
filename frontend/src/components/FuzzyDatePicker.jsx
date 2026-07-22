@@ -35,9 +35,6 @@ const PRECISION_OPTIONS = [
  */
 export default function FuzzyDatePicker({ label, value = {}, onChange, allowBCE = false, required = false }) {
   const [precision, setPrecision] = useState(value.precision || 'full');
-  const [day, setDay]     = useState('');
-  const [month, setMonth] = useState('');
-  const [year, setYear]   = useState(value.date ? value.date.split('-')[0] : '');
   const [estimate, setEstimate] = useState(value.display_text || '');
   const [bce, setBce]     = useState(value.bce || false);
 

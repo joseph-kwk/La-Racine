@@ -111,7 +111,7 @@ function ProposeChangeModal({ member, fieldName, fieldLabel, currentValue, onClo
 export default function MemberProfile() {
   const { memberId } = useParams();
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { t } = useTranslation();
 
   const [member, setMember] = useState(null);

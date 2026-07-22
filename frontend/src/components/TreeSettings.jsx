@@ -11,7 +11,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { treeAPI, invitationAPI } from '../services/api';
 import ThemePicker from './ThemePicker';
 import TreeThemeProvider from './TreeThemeProvider';
@@ -47,7 +46,7 @@ const LANGUAGE_OPTIONS = [
 const TreeSettings = () => {
   const { treeId } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+
 
   const [tree, setTree]         = useState(null);
   const [loading, setLoading]   = useState(true);

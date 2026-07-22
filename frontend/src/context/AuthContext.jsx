@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { authAPI, profileAPI } from '../services/api';
+import { authAPI } from '../services/api';
 import { AuthContext } from './auth';
 
 export const AuthProvider = ({ children }) => {

@@ -13,7 +13,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { memberAPI, relationshipAPI } from '../services/api';
+import { memberAPI } from '../services/api';
 import FuzzyDatePicker from './FuzzyDatePicker';
 
 const EditMember = () => {
@@ -89,6 +89,7 @@ const EditMember = () => {
       }
     };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memberId]);
 
   const showToast = (type, message) => {

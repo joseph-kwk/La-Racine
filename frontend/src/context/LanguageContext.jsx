@@ -117,7 +117,7 @@ export const LanguageProvider = ({ children }) => {
     if (safe !== currentLanguage) {
       changeLanguage(safe);
     }
-  }, [currentLanguage, changeLanguage]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentLanguage, changeLanguage]);
 
   // ── Keep state in sync when i18n changes externally ────────────────────────
   useEffect(() => {
