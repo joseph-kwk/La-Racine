@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { treeAPI, calendarAPI } from '../services/api';
 import {
   CalendarIcon, ChevronLeft, ChevronRight, Plus,
-  Search, Download, Share2, MapPin, Clock, RefreshCw
+  Search, Share2, MapPin, Clock, RefreshCw
 } from './CalendarIcons';
 import CalendarExportModal from './CalendarExportModal';
 
@@ -27,10 +27,11 @@ const CalendarView = () => {
     }
   }, []);
 
-  // Modals
+  // Modals & Popovers
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedDayModal, setSelectedDayModal] = useState(null); // { dateStr, events }
 
   // New Event Form State
   const [newEvent, setNewEvent] = useState({
@@ -85,6 +86,15 @@ const CalendarView = () => {
   const selectedTree = useMemo(() => {
     return trees.find(t => t.id === Number(selectedTreeId)) || trees[0];
   }, [trees, selectedTreeId]);
+
+  // Quick Stat Counters
+  const stats = useMemo(() => {
+    const bdays = events.filter(e => e.category === 'Birthday').length;
+    const annivs = events.filter(e => e.category === 'Anniversary').length;
+    const reunions = events.filter(e => e.category === 'Reunion' || e.category === 'Gathering' || e.category === 'Ceremony').length;
+    const memorials = events.filter(e => e.category === 'Memorial').length;
+    return { bdays, annivs, reunions, memorials, total: events.length };
+  }, [events]);
 
   // Enhanced Event Filter
   const filteredEvents = useMemo(() => {
@@ -177,20 +187,21 @@ const CalendarView = () => {
     return map;
   }, [filteredEvents, currentDate]);
 
-  // Category Color Badge Helpers
+  // Category Accent Card Styling
   const getCategoryBadgeClass = (category) => {
     switch (category.toUpperCase()) {
       case 'BIRTHDAY':
-        return 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+        return 'bg-gradient-to-r from-rose-500/20 to-pink-500/20 text-rose-200 border-l-4 border-l-rose-500 border-rose-500/30 hover:border-rose-400';
       case 'ANNIVERSARY':
-        return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+        return 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-200 border-l-4 border-l-emerald-500 border-emerald-500/30 hover:border-emerald-400';
       case 'MEMORIAL':
-        return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+        return 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-200 border-l-4 border-l-amber-500 border-amber-500/30 hover:border-amber-400';
       case 'REUNION':
       case 'GATHERING':
-        return 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
+      case 'CEREMONY':
+        return 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-indigo-200 border-l-4 border-l-indigo-500 border-indigo-500/30 hover:border-indigo-400';
       default:
-        return 'bg-slate-700/50 text-slate-300 border-slate-600/50';
+        return 'bg-slate-800/80 text-slate-200 border-l-4 border-l-slate-500 border-slate-700/60';
     }
   };
 
@@ -240,18 +251,18 @@ const CalendarView = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Sleek Top Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-6 rounded-2xl shadow-xl backdrop-blur-md">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-6 rounded-2xl shadow-2xl backdrop-blur-md">
         <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-emerald-900/30">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-emerald-900/40 shrink-0">
             <CalendarIcon className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 flex-wrap gap-y-1">
               <h1 className="text-2xl font-black text-slate-100 tracking-tight">
                 {t('calendar.title', 'Family Tree Calendar')}
               </h1>
               {/* Timezone badge */}
-              <span className="px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-mono text-emerald-400 font-bold">
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-950 border border-slate-700/80 text-[10px] font-mono text-emerald-400 font-bold shadow-xs">
                 🌐 {userTimezone}
               </span>
             </div>
@@ -267,7 +278,7 @@ const CalendarView = () => {
           <select
             value={selectedTreeId}
             onChange={(e) => setSelectedTreeId(e.target.value)}
-            className="bg-slate-800 border border-slate-700/80 text-slate-200 text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="bg-slate-950 border border-slate-700/80 text-slate-200 text-xs font-bold rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 shadow-inner"
           >
             {trees.map(t => (
               <option key={t.id} value={t.id}>{t.name}</option>
@@ -277,7 +288,7 @@ const CalendarView = () => {
           {/* Sync / Export Button */}
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold flex items-center space-x-2 transition shadow-sm"
+            className="px-4 py-2.5 bg-slate-800/90 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold flex items-center space-x-2 transition shadow-sm hover:scale-[1.02] active:scale-95"
           >
             <Share2 className="w-4 h-4" />
             <span>{t('calendar.syncBtn', 'Sync with Google/iCal')}</span>
@@ -286,7 +297,7 @@ const CalendarView = () => {
           {/* Add Event Button */}
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold flex items-center space-x-2 transition shadow-md shadow-emerald-900/40"
+            className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold flex items-center space-x-2 transition shadow-lg shadow-emerald-900/40 hover:scale-[1.02] active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>{t('calendar.newEventBtn', 'Add Family Event')}</span>
@@ -294,8 +305,51 @@ const CalendarView = () => {
         </div>
       </div>
 
+      {/* Quick Summary Stat Banner */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 flex items-center space-x-3.5 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-lg shrink-0">
+            🎂
+          </div>
+          <div>
+            <div className="text-lg font-black text-slate-100">{stats.bdays}</div>
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{t('calendar.catBirthday', 'Birthdays')}</div>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 flex items-center space-x-3.5 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-lg shrink-0">
+            💍
+          </div>
+          <div>
+            <div className="text-lg font-black text-slate-100">{stats.annivs}</div>
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{t('calendar.catAnniversary', 'Anniversaries')}</div>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 flex items-center space-x-3.5 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-lg shrink-0">
+            🎪
+          </div>
+          <div>
+            <div className="text-lg font-black text-slate-100">{stats.reunions}</div>
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{t('calendar.catReunion', 'Reunions')}</div>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 flex items-center space-x-3.5 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-lg shrink-0">
+            🕯️
+          </div>
+          <div>
+            <div className="text-lg font-black text-slate-100">{stats.memorials}</div>
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{t('calendar.catMemorial', 'Memorials')}</div>
+          </div>
+        </div>
+      </div>
+
       {/* Filter & View Switcher Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm">
         {/* Search */}
         <div className="relative w-full sm:w-64">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
@@ -304,7 +358,7 @@ const CalendarView = () => {
             placeholder={t('calendar.searchPlaceholder', 'Filter events...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-950/80 border border-slate-700/60 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full bg-slate-950/80 border border-slate-700/60 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
           />
         </div>
 
@@ -316,7 +370,7 @@ const CalendarView = () => {
               onClick={() => setCategoryFilter(cat)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap border ${
                 categoryFilter === cat
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs scale-105'
                   : 'text-slate-400 hover:text-slate-200 bg-slate-950/40 border-slate-800/60'
               }`}
             >
@@ -377,7 +431,7 @@ const CalendarView = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={today}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition"
+                className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold transition shadow-xs"
               >
                 {t('calendar.today', 'Today')}
               </button>
@@ -397,7 +451,7 @@ const CalendarView = () => {
           </div>
 
           {/* Weekday Labels */}
-          <div className="grid grid-cols-7 border-b border-slate-800 bg-slate-950/40 text-center py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <div className="grid grid-cols-7 border-b border-slate-800 bg-slate-950/40 text-center py-2.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
             <span>Sun</span>
             <span>Mon</span>
             <span>Tue</span>
@@ -411,7 +465,7 @@ const CalendarView = () => {
           <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-800/60 bg-slate-950/20">
             {daysInMonth.map((dayDate, idx) => {
               if (!dayDate) {
-                return <div key={`empty-${idx}`} className="min-h-[110px] bg-slate-950/40" />;
+                return <div key={`empty-${idx}`} className="min-h-[120px] bg-slate-950/40" />;
               }
 
               const yyyy = dayDate.getFullYear();
@@ -425,13 +479,13 @@ const CalendarView = () => {
               return (
                 <div
                   key={dateStr}
-                  className={`min-h-[110px] p-2 flex flex-col justify-start transition ${
-                    isToday ? 'bg-emerald-950/30 border-2 border-emerald-500/50 shadow-inner' : 'hover:bg-slate-800/20'
+                  className={`min-h-[120px] p-2 flex flex-col justify-start transition ${
+                    isToday ? 'bg-emerald-950/30 border-2 border-emerald-500/60 shadow-inner' : 'hover:bg-slate-800/20'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1.5">
                     <span
-                      className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${
+                      className={`text-xs font-bold w-6.5 h-6.5 rounded-full flex items-center justify-center ${
                         isToday
                           ? 'bg-emerald-500 text-slate-950 font-black shadow-md animate-pulse'
                           : 'text-slate-400'
@@ -440,23 +494,33 @@ const CalendarView = () => {
                       {dayDate.getDate()}
                     </span>
                     {dayEvents.length > 0 && (
-                      <span className="text-[10px] font-bold text-slate-500">
+                      <span className="text-[10px] font-extrabold text-slate-500 bg-slate-800/80 px-1.5 py-0.5 rounded-md">
                         {dayEvents.length}
                       </span>
                     )}
                   </div>
 
                   {/* Day Events Stack */}
-                  <div className="space-y-1 overflow-y-auto max-h-[85px] pr-0.5">
-                    {dayEvents.map(ev => (
+                  <div className="space-y-1 overflow-y-auto max-h-[90px] pr-0.5">
+                    {dayEvents.slice(0, 3).map(ev => (
                       <button
                         key={ev.id}
                         onClick={() => setSelectedEvent(ev)}
-                        className={`w-full text-left px-2 py-1 rounded text-[11px] font-semibold truncate transition border shadow-xs ${getCategoryBadgeClass(ev.category)}`}
+                        className={`w-full text-left px-2 py-1 rounded-md text-[11px] font-semibold truncate transition shadow-xs hover:scale-[1.02] ${getCategoryBadgeClass(ev.category)}`}
                       >
                         {ev.title}
                       </button>
                     ))}
+
+                    {/* "+N more" expansion indicator */}
+                    {dayEvents.length > 3 && (
+                      <button
+                        onClick={() => setSelectedDayModal({ dateStr, events: dayEvents })}
+                        className="w-full text-center py-0.5 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-950/30 hover:bg-emerald-900/40 rounded transition border border-emerald-500/20"
+                      >
+                        +{dayEvents.length - 3} more
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -471,10 +535,10 @@ const CalendarView = () => {
               Week of {daysInWeek[0].toLocaleDateString('default', { month: 'short', day: 'numeric' })} – {daysInWeek[6].toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' })}
             </h3>
             <div className="flex items-center space-x-2">
-              <button onClick={prevPeriod} className="p-1.5 bg-slate-800 text-slate-300 rounded-lg">
+              <button onClick={prevPeriod} className="p-1.5 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <button onClick={nextPeriod} className="p-1.5 bg-slate-800 text-slate-300 rounded-lg">
+              <button onClick={nextPeriod} className="p-1.5 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -492,7 +556,7 @@ const CalendarView = () => {
               return (
                 <div
                   key={dateStr}
-                  className={`bg-slate-950/60 border rounded-xl p-3 space-y-2 min-h-[160px] ${
+                  className={`bg-slate-950/60 border rounded-xl p-3 space-y-2 min-h-[170px] ${
                     isToday ? 'border-emerald-500/60 bg-emerald-950/20' : 'border-slate-800/80'
                   }`}
                 >
@@ -510,7 +574,7 @@ const CalendarView = () => {
                       <button
                         key={ev.id}
                         onClick={() => setSelectedEvent(ev)}
-                        className={`w-full text-left p-2 rounded-lg text-xs font-semibold transition border ${getCategoryBadgeClass(ev.category)}`}
+                        className={`w-full text-left p-2 rounded-lg text-xs font-semibold transition hover:scale-[1.02] ${getCategoryBadgeClass(ev.category)}`}
                       >
                         <p className="font-bold truncate">{ev.title}</p>
                       </button>
@@ -541,7 +605,7 @@ const CalendarView = () => {
                 <div
                   key={ev.id}
                   onClick={() => setSelectedEvent(ev)}
-                  className="bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 p-4 rounded-xl flex items-center justify-between cursor-pointer transition shadow-xs"
+                  className="bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 p-4 rounded-xl flex items-center justify-between cursor-pointer transition shadow-xs hover:scale-[1.01]"
                 >
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-lg shrink-0 shadow-inner">
@@ -565,7 +629,7 @@ const CalendarView = () => {
                     <div className="text-xs font-bold text-slate-300">
                       {ev.start_date.substring(0, 10)}
                     </div>
-                    <span className={`text-[10px] font-semibold uppercase px-2.5 py-0.5 rounded-md inline-block border ${getCategoryBadgeClass(ev.category)}`}>
+                    <span className={`text-[10px] font-semibold uppercase px-2.5 py-0.5 rounded-md inline-block ${getCategoryBadgeClass(ev.category)}`}>
                       {ev.category}
                     </span>
                   </div>
@@ -573,6 +637,32 @@ const CalendarView = () => {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Day Expansion Modal (when date cell has >3 events) */}
+      {selectedDayModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-slate-900 border border-slate-700 text-slate-100 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-lg font-bold">Events on {selectedDayModal.dateStr}</h3>
+              <button onClick={() => setSelectedDayModal(null)} className="text-slate-400 hover:text-slate-200">
+                ✕
+              </button>
+            </div>
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+              {selectedDayModal.events.map(ev => (
+                <div
+                  key={ev.id}
+                  onClick={() => { setSelectedDayModal(null); setSelectedEvent(ev); }}
+                  className={`p-3 rounded-xl cursor-pointer ${getCategoryBadgeClass(ev.category)}`}
+                >
+                  <p className="font-bold text-xs">{ev.title}</p>
+                  {ev.description && <p className="text-[11px] opacity-80 mt-0.5">{ev.description}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -617,7 +707,7 @@ const CalendarView = () => {
                   href={getGoogleCalendarUrl(selectedEvent)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 transition shadow-md"
+                  className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 transition shadow-md"
                 >
                   <Share2 className="w-4 h-4" />
                   <span>{t('calendar.addToGoogleCalendar', 'Add to Google Calendar (1-Click)')}</span>
@@ -650,7 +740,7 @@ const CalendarView = () => {
                   placeholder="e.g. Kasongo Family Annual Reunion 2026"
                   value={newEvent.title}
                   onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 />
               </div>
 
