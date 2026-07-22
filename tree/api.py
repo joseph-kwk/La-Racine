@@ -37,6 +37,7 @@ from .serializers import (
     FamilyEventSerializer, CalendarFeedTokenSerializer,
 )
 from .calendar_utils import build_ics_feed
+from .kinship_utils import resolve_user_member, compute_kinship_map
 from django.http import HttpResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -950,9 +951,11 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
     def aggregated_events(self, request):
         """
         Unified JSON endpoint combining birthdays, anniversaries, memorial days,
-        and custom family events for in-app calendar display.
+        and custom family events filtered by Kinship Scope (immediate, lineal, extended, all).
         """
         tree_id = request.query_params.get('tree_id')
+        scope = request.query_params.get('scope', 'all').lower()
+
         if not tree_id:
             raise ValidationError({'tree_id': 'tree_id parameter is required'})
 
@@ -963,6 +966,18 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
 
         assert_tree_role(request.user, tree, ['owner', 'admin', 'contributor', 'viewer'])
 
+        # Kinship Scope Filter Setup
+        focus_member = resolve_user_member(request.user, tree)
+        kinship_map = compute_kinship_map(focus_member)
+
+        allowed_scopes = {'all'}
+        if scope == 'immediate':
+            allowed_scopes = {'immediate'}
+        elif scope == 'lineal':
+            allowed_scopes = {'immediate', 'lineal'}
+        elif scope == 'extended':
+            allowed_scopes = {'immediate', 'lineal', 'extended'}
+
         events = []
 
         # 1. Birthdays
@@ -971,6 +986,10 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
         ).select_related('birth_date')
 
         for m in members_with_bday:
+            k_info = kinship_map.get(m.id, {'scope': 'all', 'label': ''})
+            if scope != 'all' and k_info['scope'] not in allowed_scopes:
+                continue
+
             events.append({
                 'id': f'bday-{m.id}',
                 'uid': f'bday-{m.id}@laracine',
@@ -981,6 +1000,7 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
                 'is_recurring': True,
                 'category': 'Birthday',
                 'member_id': m.id,
+                'kinship_label': k_info['label'],
             })
 
         # 2. Deaths / Memorials
@@ -989,6 +1009,10 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
         ).select_related('death_date')
 
         for m in members_deceased:
+            k_info = kinship_map.get(m.id, {'scope': 'all', 'label': ''})
+            if scope != 'all' and k_info['scope'] not in allowed_scopes:
+                continue
+
             events.append({
                 'id': f'memorial-{m.id}',
                 'uid': f'memorial-{m.id}@laracine',
@@ -999,6 +1023,7 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
                 'is_recurring': True,
                 'category': 'Memorial',
                 'member_id': m.id,
+                'kinship_label': k_info['label'],
             })
 
         # 3. Marriages / Anniversaries
@@ -1007,6 +1032,13 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
         ).select_related('from_member', 'to_member')
 
         for rel in spouses:
+            k1 = kinship_map.get(rel.from_member_id, {'scope': 'all', 'label': ''})
+            k2 = kinship_map.get(rel.to_member_id, {'scope': 'all', 'label': ''})
+
+            # Include if either spouse is in scope
+            if scope != 'all' and k1['scope'] not in allowed_scopes and k2['scope'] not in allowed_scopes:
+                continue
+
             events.append({
                 'id': f'anniv-{rel.id}',
                 'uid': f'anniv-{rel.id}@laracine',
@@ -1017,6 +1049,7 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
                 'is_recurring': True,
                 'category': 'Anniversary',
                 'relationship_id': rel.id,
+                'kinship_label': k1['label'] or k2['label'],
             })
 
         # 4. Custom Family Events
@@ -1043,11 +1076,13 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
                 'is_recurring': fe.is_annual_recurring,
                 'category': fe.event_type.capitalize(),
                 'created_by': fe.created_by.username,
+                'kinship_label': 'Family Event',
             })
 
         return Response({
             'tree_id': tree.id,
             'tree_name': tree.name,
+            'scope': scope,
             'count': len(events),
             'events': events,
         })

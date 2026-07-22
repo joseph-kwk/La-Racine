@@ -259,7 +259,7 @@ export const updateAPI = {
 // Calendar & External iCal Feed
 // ────────────────────────────────────────────────────────────────────────────
 export const calendarAPI = {
-  getAggregatedEvents: (treeId) => api.get('/calendar/events/aggregated/', { params: { tree_id: treeId } }),
+  getAggregatedEvents: (treeId, scope = 'all') => api.get('/calendar/events/aggregated/', { params: { tree_id: treeId, scope } }),
   createEvent: (data) => api.post('/calendar/events/', data),
   getFeedToken: (treeId) => api.get('/calendar/events/feed-token/', { params: { tree_id: treeId } }),
   getExportICSUrl: (treeId) => `${API_BASE_URL}/calendar/events/export-ics/?tree_id=${treeId}`,

@@ -14,6 +14,7 @@ const CalendarView = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState('month'); // 'month' | 'week' | 'agenda'
+  const [kinshipScope, setKinshipScope] = useState('all'); // 'all' | 'immediate' | 'lineal' | 'extended'
   const [currentDate, setCurrentDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
@@ -51,9 +52,9 @@ const CalendarView = () => {
 
   useEffect(() => {
     if (selectedTreeId) {
-      loadEvents(selectedTreeId);
+      loadEvents(selectedTreeId, kinshipScope);
     }
-  }, [selectedTreeId]);
+  }, [selectedTreeId, kinshipScope]);
 
   const loadTrees = async () => {
     try {
@@ -71,10 +72,10 @@ const CalendarView = () => {
     }
   };
 
-  const loadEvents = async (treeId) => {
+  const loadEvents = async (treeId, scope = 'all') => {
     setLoading(true);
     try {
-      const res = await calendarAPI.getAggregatedEvents(treeId);
+      const res = await calendarAPI.getAggregatedEvents(treeId, scope);
       setEvents(res.data.events || []);
     } catch (err) {
       console.error('Failed to load aggregated calendar events:', err);
@@ -345,6 +346,34 @@ const CalendarView = () => {
             <div className="text-lg font-black text-slate-100">{stats.memorials}</div>
             <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{t('calendar.catMemorial', 'Memorials')}</div>
           </div>
+        </div>
+      </div>
+
+      {/* Kinship Scope Switcher Bar */}
+      <div className="flex items-center justify-between bg-slate-900/70 border border-slate-800 p-3 rounded-xl gap-2 flex-wrap">
+        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider pl-1">
+          {t('calendar.kinshipScopeLabel', 'Kinship Scope:')}
+        </span>
+        <div className="flex items-center space-x-1.5 overflow-x-auto">
+          {[
+            { key: 'all', label: t('calendar.scopeAll', '🌳 Full Tree'), desc: 'All connected members' },
+            { key: 'immediate', label: t('calendar.scopeImmediate', '🏠 Immediate Family'), desc: 'Parents, Children, Siblings, Spouse' },
+            { key: 'lineal', label: t('calendar.scopeLineal', '📜 Direct Lineage'), desc: 'Ancestors & Descendants' },
+            { key: 'extended', label: t('calendar.scopeExtended', '👨‍👩‍👧‍👦 Extended Family'), desc: 'Aunts, Uncles, Cousins, In-Laws' },
+          ].map((sc) => (
+            <button
+              key={sc.key}
+              onClick={() => setKinshipScope(sc.key)}
+              title={sc.desc}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap border ${
+                kinshipScope === sc.key
+                  ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md font-extrabold scale-105'
+                  : 'bg-slate-950/60 text-slate-300 border-slate-800/80 hover:bg-slate-800'
+              }`}
+            >
+              {sc.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -629,9 +658,16 @@ const CalendarView = () => {
                     <div className="text-xs font-bold text-slate-300">
                       {ev.start_date.substring(0, 10)}
                     </div>
-                    <span className={`text-[10px] font-semibold uppercase px-2.5 py-0.5 rounded-md inline-block ${getCategoryBadgeClass(ev.category)}`}>
-                      {ev.category}
-                    </span>
+                    <div className="flex items-center justify-end space-x-1.5">
+                      {ev.kinship_label && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-emerald-400 border border-emerald-500/30">
+                          {ev.kinship_label}
+                        </span>
+                      )}
+                      <span className={`text-[10px] font-semibold uppercase px-2.5 py-0.5 rounded-md inline-block ${getCategoryBadgeClass(ev.category)}`}>
+                        {ev.category}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
