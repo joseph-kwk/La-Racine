@@ -28,6 +28,8 @@ from tree.api import (
     TreeInvitationViewSet,
     UpdateViewSet,
     FuzzyDateViewSet,
+    CalendarEventsViewSet,
+    public_calendar_feed,
 )
 
 # Notifications
@@ -96,6 +98,9 @@ router.register(r'life-events', LifeEventViewSet, basename='lifeevent')
 router.register(r'audit-log', AuditLogViewSet, basename='auditlog')
 router.register(r'history-events', HistoryEventViewSet, basename='historyevent')
 
+# Calendar & iCal
+router.register(r'calendar/events', CalendarEventsViewSet, basename='calendarevent')
+
 # Legacy (backward compat)
 router.register(r'updates', UpdateViewSet, basename='update')
 
@@ -110,6 +115,9 @@ urlpatterns = [
     path('api/auth/me/', MeView.as_view(), name='me'),
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # Public iCal subscription feed (unauthenticated for Google Calendar / Apple iCal sync)
+    path('api/calendar/feed/<str:token>.ics', public_calendar_feed, name='public_calendar_feed'),
 ]
 
 # Admin branding is configured in tree/admin.py

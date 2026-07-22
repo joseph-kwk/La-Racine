@@ -18,7 +18,7 @@ from .models import (
     FuzzyDate, Tree, TreePermission, FamilyMember, FamilyRelationship,
     MemberPrivacySettings, ChangeRequest, ChangeRequestValidator,
     FamilyPhoto, PhotoTag, FamilyUpdate, UpdateComment, UpdateLike,
-    TreeInvitation, Update,
+    TreeInvitation, Update, FamilyEvent, CalendarFeedToken,
 )
 
 
@@ -346,6 +346,31 @@ class FamilyUpdateSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at', 'likes_count', 'comments_count',
             'update_type_display',
         )
+
+
+# ---------------------------------------------------------------------------
+# FamilyEvent & CalendarFeedToken
+# ---------------------------------------------------------------------------
+
+class FamilyEventSerializer(serializers.ModelSerializer):
+    created_by_username = serializers.ReadOnlyField(source='created_by.username')
+    tree_name = serializers.ReadOnlyField(source='tree.name')
+
+    class Meta:
+        model = FamilyEvent
+        fields = (
+            'id', 'tree', 'tree_name', 'title', 'description', 'event_type',
+            'start_date', 'end_date', 'location', 'is_annual_recurring',
+            'created_by', 'created_by_username', 'created_at', 'updated_at',
+        )
+        read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
+
+
+class CalendarFeedTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CalendarFeedToken
+        fields = ('id', 'tree', 'token', 'created_at')
+        read_only_fields = ('id', 'token', 'created_at')
 
 
 # ---------------------------------------------------------------------------

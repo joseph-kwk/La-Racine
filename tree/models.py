@@ -898,6 +898,69 @@ class Update(models.Model):
 
 
 # ---------------------------------------------------------------------------
+# FamilyEvent & CalendarFeedToken — In-App Calendar & External iCal Sync
+# ---------------------------------------------------------------------------
+
+class FamilyEvent(models.Model):
+    """Custom family events (Reunions, Gatherings, Ceremonies, Memorials)."""
+    EVENT_TYPES = [
+        ('reunion',   'Family Reunion'),
+        ('gathering', 'Family Gathering'),
+        ('ceremony',  'Ceremony / Milestone'),
+        ('memorial',  'Memorial Service'),
+        ('other',     'Other Event'),
+    ]
+
+    tree = models.ForeignKey(
+        'Tree', on_delete=models.CASCADE, related_name='family_events'
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPES, default='reunion')
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField(null=True, blank=True)
+    location = models.CharField(max_length=255, blank=True)
+    is_annual_recurring = models.BooleanField(
+        default=False,
+        help_text='If True, repeats annually on the same month & day'
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_family_events'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.tree.name})"
+
+    class Meta:
+        ordering = ['start_date']
+
+
+class CalendarFeedToken(models.Model):
+    """Token for secure webcal/ics subscription feed endpoints."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='calendar_tokens'
+    )
+    tree = models.ForeignKey(
+        'Tree', on_delete=models.CASCADE, related_name='calendar_tokens'
+    )
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    def get_or_create_token(cls, user, tree):
+        tok_obj = cls.objects.filter(user=user, tree=tree).first()
+        if not tok_obj:
+            new_token = secrets.token_urlsafe(32)
+            tok_obj = cls.objects.create(user=user, tree=tree, token=new_token)
+        return tok_obj
+
+    def __str__(self):
+        return f"Token for {self.user.username} on {self.tree.name}"
+
+
+# ---------------------------------------------------------------------------
 # Signals — auto-create related objects on new FamilyMember
 # ---------------------------------------------------------------------------
 

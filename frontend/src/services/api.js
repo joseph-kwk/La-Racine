@@ -255,6 +255,16 @@ export const updateAPI = {
   deleteUpdate: (id) => api.delete(`/updates/${id}/`),
 };
 
+// ────────────────────────────────────────────────────────────────────────────
+// Calendar & External iCal Feed
+// ────────────────────────────────────────────────────────────────────────────
+export const calendarAPI = {
+  getAggregatedEvents: (treeId) => api.get('/calendar/events/aggregated/', { params: { tree_id: treeId } }),
+  createEvent: (data) => api.post('/calendar/events/', data),
+  getFeedToken: (treeId) => api.get('/calendar/events/feed-token/', { params: { tree_id: treeId } }),
+  getExportICSUrl: (treeId) => `${API_BASE_URL}/calendar/events/export-ics/?tree_id=${treeId}`,
+};
+
 // Alias for older code
 export const getAllTrees = () => treeAPI.getAll();
 

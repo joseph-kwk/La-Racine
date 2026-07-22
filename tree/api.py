@@ -24,7 +24,7 @@ from .models import (
     Tree, TreePermission, FamilyMember, FamilyRelationship,
     MemberPrivacySettings, ChangeRequest, ChangeRequestValidator,
     FamilyPhoto, PhotoTag, FamilyUpdate, UpdateComment, UpdateLike,
-    TreeInvitation, Update, FuzzyDate,
+    TreeInvitation, Update, FuzzyDate, FamilyEvent, CalendarFeedToken,
 )
 from .serializers import (
     TreeSerializer, TreePermissionSerializer,
@@ -34,7 +34,12 @@ from .serializers import (
     FamilyPhotoSerializer, PhotoTagSerializer,
     FamilyUpdateSerializer, UpdateCommentSerializer, UpdateLikeSerializer,
     TreeInvitationSerializer, UpdateSerializer, FuzzyDateSerializer,
+    FamilyEventSerializer, CalendarFeedTokenSerializer,
 )
+from .calendar_utils import build_ics_feed
+from django.http import HttpResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 
 
 # ---------------------------------------------------------------------------
@@ -908,3 +913,270 @@ def _notify_change_rejected(cr):
         status='sent',
         sent_at=timezone.now(),
     )
+
+
+# ---------------------------------------------------------------------------
+# CalendarEventsViewSet & Public iCal Subscription Feed
+# ---------------------------------------------------------------------------
+
+class CalendarEventsViewSet(viewsets.ModelViewSet):
+    """
+    Handles in-app calendar events, custom event creation, .ics downloads,
+    and webcal/iCal live feed subscriptions.
+    """
+    queryset = FamilyEvent.objects.all()
+    serializer_class = FamilyEventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        tree_id = self.request.query_params.get('tree_id')
+
+        if tree_id:
+            return FamilyEvent.objects.filter(tree_id=tree_id)
+
+        # Return events from all trees user belongs to
+        user_trees = TreePermission.objects.filter(
+            user=user, status='active'
+        ).values_list('tree_id', flat=True)
+        return FamilyEvent.objects.filter(tree_id__in=user_trees)
+
+    def perform_create(self, serializer):
+        tree = serializer.validated_data['tree']
+        assert_tree_role(self.request.user, tree, ['owner', 'admin', 'contributor'])
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=False, methods=['get'], url_path='aggregated')
+    def aggregated_events(self, request):
+        """
+        Unified JSON endpoint combining birthdays, anniversaries, memorial days,
+        and custom family events for in-app calendar display.
+        """
+        tree_id = request.query_params.get('tree_id')
+        if not tree_id:
+            raise ValidationError({'tree_id': 'tree_id parameter is required'})
+
+        try:
+            tree = Tree.objects.get(pk=tree_id)
+        except Tree.DoesNotExist:
+            raise NotFound('Family Tree not found')
+
+        assert_tree_role(request.user, tree, ['owner', 'admin', 'contributor', 'viewer'])
+
+        events = []
+
+        # 1. Birthdays
+        members_with_bday = FamilyMember.objects.filter(
+            tree=tree, birth_date__date__isnull=False
+        ).select_related('birth_date')
+
+        for m in members_with_bday:
+            events.append({
+                'id': f'bday-{m.id}',
+                'uid': f'bday-{m.id}@laracine',
+                'title': f'🎂 {m.display_name}\'s Birthday',
+                'description': f'Birthday of {m.display_name} in tree "{tree.name}".',
+                'start_date': m.birth_date.date.strftime('%Y-%m-%d'),
+                'all_day': True,
+                'is_recurring': True,
+                'category': 'Birthday',
+                'member_id': m.id,
+            })
+
+        # 2. Deaths / Memorials
+        members_deceased = FamilyMember.objects.filter(
+            tree=tree, is_alive=False, death_date__date__isnull=False
+        ).select_related('death_date')
+
+        for m in members_deceased:
+            events.append({
+                'id': f'memorial-{m.id}',
+                'uid': f'memorial-{m.id}@laracine',
+                'title': f'🕯️ In Memory of {m.display_name}',
+                'description': f'Memorial date for {m.display_name}.',
+                'start_date': m.death_date.date.strftime('%Y-%m-%d'),
+                'all_day': True,
+                'is_recurring': True,
+                'category': 'Memorial',
+                'member_id': m.id,
+            })
+
+        # 3. Marriages / Anniversaries
+        spouses = FamilyRelationship.objects.filter(
+            from_member__tree=tree, relationship_type='spouse', start_date__isnull=False
+        ).select_related('from_member', 'to_member')
+
+        for rel in spouses:
+            events.append({
+                'id': f'anniv-{rel.id}',
+                'uid': f'anniv-{rel.id}@laracine',
+                'title': f'💍 {rel.from_member.display_name} & {rel.to_member.display_name}\'s Anniversary',
+                'description': f'Wedding anniversary of {rel.from_member.display_name} and {rel.to_member.display_name}.',
+                'start_date': rel.start_date.strftime('%Y-%m-%d'),
+                'all_day': True,
+                'is_recurring': True,
+                'category': 'Anniversary',
+                'relationship_id': rel.id,
+            })
+
+        # 4. Custom Family Events
+        custom_events = FamilyEvent.objects.filter(tree=tree)
+        category_emojis = {
+            'reunion': '🎪',
+            'gathering': '🎉',
+            'ceremony': '🎖️',
+            'memorial': '🕯️',
+            'other': '📅',
+        }
+
+        for fe in custom_events:
+            emoji = category_emojis.get(fe.event_type, '📅')
+            events.append({
+                'id': f'event-{fe.id}',
+                'uid': f'event-{fe.id}@laracine',
+                'title': f'{emoji} {fe.title}',
+                'description': fe.description,
+                'location': fe.location,
+                'start_date': fe.start_date.isoformat(),
+                'end_date': fe.end_date.isoformat() if fe.end_date else None,
+                'all_day': False,
+                'is_recurring': fe.is_annual_recurring,
+                'category': fe.event_type.capitalize(),
+                'created_by': fe.created_by.username,
+            })
+
+        return Response({
+            'tree_id': tree.id,
+            'tree_name': tree.name,
+            'count': len(events),
+            'events': events,
+        })
+
+    @action(detail=False, methods=['get'], url_path='export-ics')
+    def export_ics(self, request):
+        """Generates a downloadable RFC 5545 .ics file attachment."""
+        tree_id = request.query_params.get('tree_id')
+        if not tree_id:
+            raise ValidationError({'tree_id': 'tree_id parameter is required'})
+
+        try:
+            tree = Tree.objects.get(pk=tree_id)
+        except Tree.DoesNotExist:
+            raise NotFound('Family Tree not found')
+
+        assert_tree_role(request.user, tree, ['owner', 'admin', 'contributor', 'viewer'])
+
+        events_list = self._collect_all_tree_events(tree)
+        ics_text = build_ics_feed(tree.name, events_list)
+
+        response = HttpResponse(ics_text, content_type='text/calendar; charset=utf-8')
+        filename = f"{tree.name.lower().replace(' ', '_')}_calendar.ics"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    @action(detail=False, methods=['get', 'post'], url_path='feed-token')
+    def feed_token(self, request):
+        """Generates or retrieves live webcal/ics feed subscription token."""
+        tree_id = request.query_params.get('tree_id') or request.data.get('tree_id')
+        if not tree_id:
+            raise ValidationError({'tree_id': 'tree_id parameter is required'})
+
+        try:
+            tree = Tree.objects.get(pk=tree_id)
+        except Tree.DoesNotExist:
+            raise NotFound('Family Tree not found')
+
+        assert_tree_role(request.user, tree, ['owner', 'admin', 'contributor', 'viewer'])
+
+        token_obj = CalendarFeedToken.get_or_create_token(request.user, tree)
+        
+        # Build subscription URLs
+        domain = request.get_host()
+        protocol = 'https' if request.is_secure() else 'http'
+        feed_url = f"{protocol}://{domain}/api/calendar/feed/{token_obj.token}.ics"
+        webcal_url = f"webcal://{domain}/api/calendar/feed/{token_obj.token}.ics"
+
+        return Response({
+            'tree_id': tree.id,
+            'token': token_obj.token,
+            'feed_url': feed_url,
+            'webcal_url': webcal_url,
+        })
+
+    def _collect_all_tree_events(self, tree):
+        """Helper to collect all formatted event objects for iCal generation."""
+        events = []
+
+        # Birthdays
+        for m in FamilyMember.objects.filter(tree=tree, birth_date__date__isnull=False):
+            events.append({
+                'uid': f'bday-{m.id}@laracine',
+                'title': f'🎂 {m.display_name}\'s Birthday',
+                'description': f'Birthday of {m.display_name} in tree "{tree.name}".',
+                'start_date': m.birth_date.date,
+                'all_day': True,
+                'is_recurring': True,
+                'category': 'Birthday',
+            })
+
+        # Memorials
+        for m in FamilyMember.objects.filter(tree=tree, is_alive=False, death_date__date__isnull=False):
+            events.append({
+                'uid': f'memorial-{m.id}@laracine',
+                'title': f'🕯️ In Memory of {m.display_name}',
+                'description': f'Memorial date for {m.display_name}.',
+                'start_date': m.death_date.date,
+                'all_day': True,
+                'is_recurring': True,
+                'category': 'Memorial',
+            })
+
+        # Anniversaries
+        for rel in FamilyRelationship.objects.filter(from_member__tree=tree, relationship_type='spouse', start_date__isnull=False):
+            events.append({
+                'uid': f'anniv-{rel.id}@laracine',
+                'title': f'💍 {rel.from_member.display_name} & {rel.to_member.display_name}\'s Anniversary',
+                'description': f'Wedding anniversary of {rel.from_member.display_name} and {rel.to_member.display_name}.',
+                'start_date': rel.start_date,
+                'all_day': True,
+                'is_recurring': True,
+                'category': 'Anniversary',
+            })
+
+        # Custom Events
+        for fe in FamilyEvent.objects.filter(tree=tree):
+            events.append({
+                'uid': f'event-{fe.id}@laracine',
+                'title': fe.title,
+                'description': fe.description,
+                'location': fe.location,
+                'start_date': fe.start_date,
+                'end_date': fe.end_date,
+                'all_day': False,
+                'is_recurring': fe.is_annual_recurring,
+                'category': fe.event_type.capitalize(),
+            })
+
+        return events
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def public_calendar_feed(request, token):
+    """
+    Public unauthenticated endpoint for external calendar subscription (webcal:// / https://).
+    Allows Google Calendar, Apple Calendar, and Outlook to fetch live .ics updates.
+    """
+    try:
+        tok_obj = CalendarFeedToken.objects.select_related('tree', 'user').get(token=token)
+    except CalendarFeedToken.DoesNotExist:
+        return HttpResponse('Invalid or expired calendar feed token.', status=404, content_type='text/plain')
+
+    tree = tok_obj.tree
+    viewset = CalendarEventsViewSet()
+    events_list = viewset._collect_all_tree_events(tree)
+    ics_text = build_ics_feed(tree.name, events_list)
+
+    response = HttpResponse(ics_text, content_type='text/calendar; charset=utf-8')
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return response

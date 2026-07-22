@@ -157,6 +157,16 @@ const Header = () => {
             )}
           </div>
 
+          {/* Calendar Link */}
+          <Link
+            to="/calendar"
+            className="btn btn-logout"
+            style={{ background: 'white', color: 'var(--primary-dark)', borderColor: 'var(--gray-200)', marginRight: '6px' }}
+            title={t('header.calendar', 'Family Calendar')}
+          >
+            📅
+          </Link>
+
           {/* Notifications */}
           <Link
             to="/notifications"

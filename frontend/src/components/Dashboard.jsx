@@ -121,6 +121,13 @@ const Dashboard = () => {
         >
           📰 {t('dashboard.updates')}
         </button>
+        <Link
+          to="/calendar"
+          className="nav-tab"
+          style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+          📅 {t('header.calendar', 'Calendar')}
+        </Link>
       </nav>
 
       {/* Main Content */}

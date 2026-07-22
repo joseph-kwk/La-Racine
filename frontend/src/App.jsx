@@ -27,6 +27,7 @@ import MemberProfile from './components/MemberProfile';
 import AccountProfile from './components/AccountProfile';
 import Notifications from './components/Notifications';
 import TreeSettings from './components/TreeSettings';
+import CalendarView from './components/CalendarView';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -86,6 +87,9 @@ function AppRoutes() {
 
       {/* ── Notifications ── */}
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+
+      {/* ── Feature pages ── */}
+      <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
 
       {/* ── Trees ── */}
       <Route path="/trees"             element={<ProtectedRoute><TreeList /></ProtectedRoute>} />
