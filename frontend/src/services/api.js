@@ -261,6 +261,8 @@ export const updateAPI = {
 export const calendarAPI = {
   getAggregatedEvents: (treeId, scope = 'all') => api.get('/calendar/events/aggregated/', { params: { tree_id: treeId, scope } }),
   createEvent: (data) => api.post('/calendar/events/', data),
+  updateEvent: (id, data) => api.patch(`/calendar/events/${id}/`, data),
+  deleteEvent: (id) => api.delete(`/calendar/events/${id}/`),
   getFeedToken: (treeId) => api.get('/calendar/events/feed-token/', { params: { tree_id: treeId } }),
   getExportICSUrl: (treeId) => `${API_BASE_URL}/calendar/events/export-ics/?tree_id=${treeId}`,
 };

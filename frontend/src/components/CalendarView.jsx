@@ -208,8 +208,7 @@ const CalendarView = () => {
 
   const handleCreateEvent = async (e) => {
     e.preventDefault();
-    if (!newEvent.title || !newEvent.start_date || !selectedTreeId) return;
-    setCreating(true);
+    if (!selectedTreeId) return;
     try {
       await calendarAPI.createEvent({
         ...newEvent,
@@ -219,18 +218,38 @@ const CalendarView = () => {
       setNewEvent({
         title: '',
         description: '',
-        event_type: 'reunion',
+        location: '',
         start_date: '',
         end_date: '',
-        location: '',
+        event_type: 'reunion',
         is_annual_recurring: false,
       });
-      loadEvents(selectedTreeId);
+      loadEvents(selectedTreeId, kinshipScope);
     } catch (err) {
-      console.error('Failed to create custom family event:', err);
+      console.error('Failed to create family event:', err);
     } finally {
       setCreating(false);
     }
+  };
+
+  const handleDeleteCustomEvent = async (customEventId) => {
+    if (!window.confirm(t('calendar.confirmDeleteEvent', 'Are you sure you want to delete this event?'))) {
+      return;
+    }
+    try {
+      await calendarAPI.deleteEvent(customEventId);
+      setSelectedEvent(null);
+      if (selectedTreeId) {
+        loadEvents(selectedTreeId, kinshipScope);
+      }
+    } catch (err) {
+      console.error('Failed to delete custom event:', err);
+    }
+  };
+
+  const handleOpenQuickAddDate = (dateStr) => {
+    setNewEvent(prev => ({ ...prev, start_date: `${dateStr}T10:00` }));
+    setIsCreateModalOpen(true);
   };
 
   const getGoogleCalendarUrl = (ev) => {
@@ -522,11 +541,20 @@ const CalendarView = () => {
                     >
                       {dayDate.getDate()}
                     </span>
-                    {dayEvents.length > 0 && (
-                      <span className="text-[10px] font-extrabold text-slate-500 bg-slate-800/80 px-1.5 py-0.5 rounded-md">
-                        {dayEvents.length}
-                      </span>
-                    )}
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => handleOpenQuickAddDate(dateStr)}
+                        title={t('calendar.quickAddTooltip', 'Add event on this date')}
+                        className="text-[10px] text-slate-500 hover:text-emerald-400 hover:bg-slate-800 p-0.5 rounded transition"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                      {dayEvents.length > 0 && (
+                        <span className="text-[10px] font-extrabold text-slate-500 bg-slate-800/80 px-1.5 py-0.5 rounded-md">
+                          {dayEvents.length}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Day Events Stack */}
@@ -737,17 +765,26 @@ const CalendarView = () => {
                 )}
               </div>
 
-              {/* Add to Google Calendar 1-Click Link */}
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+              {/* Add to Google Calendar & Delete Action */}
+              <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2">
                 <a
                   href={getGoogleCalendarUrl(selectedEvent)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 transition shadow-md"
+                  className="w-full sm:flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 transition shadow-md"
                 >
                   <Share2 className="w-4 h-4" />
                   <span>{t('calendar.addToGoogleCalendar', 'Add to Google Calendar (1-Click)')}</span>
                 </a>
+
+                {selectedEvent.custom_event_id && (
+                  <button
+                    onClick={() => handleDeleteCustomEvent(selectedEvent.custom_event_id)}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-800/80 text-rose-300 font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 transition"
+                  >
+                    <span>{t('calendar.deleteEventBtn', 'Delete Event')}</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>

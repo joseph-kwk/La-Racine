@@ -314,6 +314,14 @@
     "locationLabel": "स्थान",
     "descriptionLabel": "विवरण / विवरण",
     "recurringLabel": "हर साल इस तिथि पर दोहराएं",
-    "addToGoogleCalendar": "Google Calendar में जोड़ें (1-क्लिक)"
+    "addToGoogleCalendar": "Google Calendar में जोड़ें (1-क्लिक)",
+    "kinshipScopeLabel": "रिश्तेदारी दायरा:",
+    "scopeAll": "🌳 पूरा वृक्ष",
+    "scopeImmediate": "🏠 निकटतम परिवार",
+    "scopeLineal": "📜 प्रत्यक्ष वंश",
+    "scopeExtended": "👨‍👩‍👧‍👦 विस्तारित परिवार",
+    "quickAddTooltip": "इस तिथि पर कार्यक्रम जोड़ें",
+    "confirmDeleteEvent": "क्या आप निश्चित रूप से इस कार्यक्रम को हटाना चाहते हैं?",
+    "deleteEventBtn": "कार्यक्रम हटाएं"
   }
 }

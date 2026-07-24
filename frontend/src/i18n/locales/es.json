@@ -314,6 +314,14 @@
     "locationLabel": "Lugar",
     "descriptionLabel": "Descripción / Detalles",
     "recurringLabel": "Se repite anualmente en esta fecha",
-    "addToGoogleCalendar": "Agregar a Google Calendar (1-Clic)"
+    "addToGoogleCalendar": "Agregar a Google Calendar (1-Clic)",
+    "kinshipScopeLabel": "Alcance familiar:",
+    "scopeAll": "🌳 Árbol completo",
+    "scopeImmediate": "🏠 Familia inmediata",
+    "scopeLineal": "📜 Linaje directo",
+    "scopeExtended": "👨‍👩‍👧‍👦 Familia extendida",
+    "quickAddTooltip": "Agregar evento en esta fecha",
+    "confirmDeleteEvent": "¿Está seguro de que desea eliminar este evento?",
+    "deleteEventBtn": "Eliminar evento"
   }
 }

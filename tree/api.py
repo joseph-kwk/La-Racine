@@ -947,6 +947,15 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
         assert_tree_role(self.request.user, tree, ['owner', 'admin', 'contributor'])
         serializer.save(created_by=self.request.user)
 
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        assert_tree_role(self.request.user, instance.tree, ['owner', 'admin', 'contributor'])
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        assert_tree_role(self.request.user, instance.tree, ['owner', 'admin', 'contributor'])
+        instance.delete()
+
     @action(detail=False, methods=['get'], url_path='aggregated')
     def aggregated_events(self, request):
         """
@@ -1066,10 +1075,13 @@ class CalendarEventsViewSet(viewsets.ModelViewSet):
             emoji = category_emojis.get(fe.event_type, '📅')
             events.append({
                 'id': f'event-{fe.id}',
+                'custom_event_id': fe.id,
                 'uid': f'event-{fe.id}@laracine',
                 'title': f'{emoji} {fe.title}',
+                'raw_title': fe.title,
                 'description': fe.description,
                 'location': fe.location,
+                'event_type': fe.event_type,
                 'start_date': fe.start_date.isoformat(),
                 'end_date': fe.end_date.isoformat() if fe.end_date else None,
                 'all_day': False,

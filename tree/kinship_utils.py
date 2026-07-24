@@ -3,6 +3,7 @@ tree/kinship_utils.py — Kinship Distance & Relationship Resolution Engine
 
 Calculates graph distance and degrees of relationship between a focus member
 (e.g., the logged-in user's profile) and all other members in a family tree.
+Provides gender-aware natural relationship labels (Mother, Father, Sister, Brother, etc.).
 """
 
 from collections import deque
@@ -39,6 +40,7 @@ def compute_kinship_map(focus_member):
 
     tree = focus_member.tree
     members = list(FamilyMember.objects.filter(tree=tree))
+    member_by_id = {m.id: m for m in members}
     relationships = list(FamilyRelationship.objects.filter(from_member__tree=tree))
 
     # Build adjacency list: member_id -> list of (neighbor_id, rel_type, is_forward)
@@ -63,9 +65,11 @@ def compute_kinship_map(focus_member):
             if neighbor_id not in visited:
                 visited[neighbor_id] = dist + 1
                 new_path = path + [(rel_type, is_forward)]
+                target_member = member_by_id.get(neighbor_id)
+                target_gender = getattr(target_member, 'gender', 'other')
 
-                # Determine scope level & relationship label
-                scope, label = _classify_relationship(dist + 1, new_path)
+                # Determine scope level & gender-aware relationship label
+                scope, label = _classify_relationship(dist + 1, new_path, target_gender)
                 kinship_map[neighbor_id] = {'scope': scope, 'label': label}
 
                 if dist + 1 < 4: # Traverse up to 4 hops
@@ -74,34 +78,65 @@ def compute_kinship_map(focus_member):
     return kinship_map
 
 
-def _classify_relationship(dist, path):
-    """Classifies a relationship path into a scope tier and human-readable label."""
+def _classify_relationship(dist, path, gender='other'):
+    """Classifies a relationship path into a scope tier and gender-aware label."""
+    is_female = (gender == 'female')
+    is_male = (gender == 'male')
+
     if dist == 1:
         rel_type, is_forward = path[0]
         if rel_type == 'spouse':
+            if is_female: return 'immediate', 'Wife'
+            if is_male: return 'immediate', 'Husband'
             return 'immediate', 'Spouse'
         elif rel_type == 'parent':
-            return 'immediate', 'Parent' if is_forward else 'Child'
+            if is_forward:
+                if is_female: return 'immediate', 'Mother'
+                if is_male: return 'immediate', 'Father'
+                return 'immediate', 'Parent'
+            else:
+                if is_female: return 'immediate', 'Daughter'
+                if is_male: return 'immediate', 'Son'
+                return 'immediate', 'Child'
         elif rel_type == 'child':
-            return 'immediate', 'Child' if is_forward else 'Parent'
+            if is_forward:
+                if is_female: return 'immediate', 'Daughter'
+                if is_male: return 'immediate', 'Son'
+                return 'immediate', 'Child'
+            else:
+                if is_female: return 'immediate', 'Mother'
+                if is_male: return 'immediate', 'Father'
+                return 'immediate', 'Parent'
         elif rel_type == 'sibling':
+            if is_female: return 'immediate', 'Sister'
+            if is_male: return 'immediate', 'Brother'
             return 'immediate', 'Sibling'
 
     elif dist == 2:
         r1, r2 = path[0][0], path[1][0]
         if r1 == 'parent' and r2 == 'parent':
+            if is_female: return 'lineal', 'Grandmother'
+            if is_male: return 'lineal', 'Grandfather'
             return 'lineal', 'Grandparent'
         elif r1 == 'child' and r2 == 'child':
+            if is_female: return 'lineal', 'Granddaughter'
+            if is_male: return 'lineal', 'Grandson'
             return 'lineal', 'Grandchild'
         elif r1 == 'parent' and r2 == 'sibling':
+            if is_female: return 'extended', 'Aunt'
+            if is_male: return 'extended', 'Uncle'
             return 'extended', 'Aunt / Uncle'
         elif r1 == 'sibling' and r2 == 'child':
+            if is_female: return 'extended', 'Niece'
+            if is_male: return 'extended', 'Nephew'
             return 'extended', 'Niece / Nephew'
         elif r1 == 'spouse' and r2 in ['parent', 'sibling', 'child']:
             return 'extended', 'In-Law'
 
     elif dist == 3:
         if path[0][0] == 'parent' and path[1][0] == 'parent' and path[2][0] == 'parent':
+            if is_female: return 'lineal', 'Great-Grandmother'
+            if is_male: return 'lineal', 'Great-Grandfather'
             return 'lineal', 'Great-Grandparent'
         elif path[0][0] == 'parent' and path[1][0] == 'sibling' and path[2][0] == 'child':
             return 'extended', 'First Cousin'

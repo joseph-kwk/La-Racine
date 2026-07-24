@@ -314,6 +314,14 @@
     "locationLabel": "地点",
     "descriptionLabel": "描述 / 详情",
     "recurringLabel": "每年在此日期重复",
-    "addToGoogleCalendar": "添加至 Google Calendar (一键添加)"
+    "addToGoogleCalendar": "添加至 Google Calendar (一键添加)",
+    "kinshipScopeLabel": "亲属范围：",
+    "scopeAll": "🌳 完整家族树",
+    "scopeImmediate": "🏠 直系近亲",
+    "scopeLineal": "📜 直系血亲",
+    "scopeExtended": "👨‍👩‍👧‍👦 旁系及姻亲",
+    "quickAddTooltip": "在此日期添加活动",
+    "confirmDeleteEvent": "确定要删除此活动吗？",
+    "deleteEventBtn": "删除活动"
   }
 }
