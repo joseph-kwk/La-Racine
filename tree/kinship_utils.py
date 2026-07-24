@@ -15,18 +15,15 @@ def resolve_user_member(user, tree):
     Finds the FamilyMember in a tree linked to the logged-in User.
     Fallback: returns the tree's root or first member if user is not explicitly linked.
     """
+    if not user or not user.is_authenticated:
+        return FamilyMember.objects.filter(tree=tree).first()
+
     # 1. Direct user link on FamilyMember
     member = FamilyMember.objects.filter(tree=tree, user_account=user).first()
     if member:
         return member
 
-    # 2. Check profile or email match
-    if user.email:
-        member_email = FamilyMember.objects.filter(tree=tree, email__iexact=user.email).first()
-        if member_email:
-            return member_email
-
-    # 3. Fallback to tree's primary/first member
+    # 2. Fallback to tree's primary/first member
     return FamilyMember.objects.filter(tree=tree).first()
 
 
