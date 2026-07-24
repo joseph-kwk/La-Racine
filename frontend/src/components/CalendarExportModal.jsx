@@ -49,57 +49,57 @@ const CalendarExportModal = ({ treeId, treeName, isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700/60 text-slate-100 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
+      <div className="bg-slate-900/95 border border-slate-800 text-slate-100 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col backdrop-blur-xl">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <CalendarIcon className="w-5 h-5" />
+        <div className="px-6 sm:px-8 py-6 border-b border-slate-800/80 flex items-center justify-between bg-slate-950/70">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-slate-950 shadow-md shrink-0">
+              <CalendarIcon className="w-6 h-6 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-100">
+              <h3 className="text-xl font-black text-slate-100 tracking-tight">
                 {t('calendar.exportTitle', 'Sync & Export Family Calendar')}
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-400 font-semibold mt-0.5">
                 {treeName}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 p-2 rounded-lg hover:bg-slate-800 transition"
+            className="text-slate-400 hover:text-slate-200 p-2 rounded-xl hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 overflow-y-auto max-h-[75vh]">
+        <div className="p-6 sm:p-8 space-y-6 overflow-y-auto max-h-[75vh]">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-3">
-              <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
-              <p className="text-sm">{t('calendar.generatingToken', 'Generating secure subscription link...')}</p>
+            <div className="flex flex-col items-center justify-center py-16 text-slate-400 space-y-4">
+              <RefreshCw className="w-10 h-10 animate-spin text-emerald-400" />
+              <p className="text-sm font-semibold">{t('calendar.generatingToken', 'Generating secure subscription link...')}</p>
             </div>
           ) : (
             <>
               {/* Live Webcal / iCal Subscription */}
-              <div className="bg-slate-800/60 border border-slate-700/70 rounded-xl p-5 space-y-4">
+              <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-5 sm:p-6 space-y-4 shadow-inner">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h4 className="font-semibold text-slate-200 text-sm flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <h4 className="font-extrabold text-slate-100 text-base flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                       {t('calendar.liveFeedTitle', 'Live iCal / Webcal Subscription Feed')}
                     </h4>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs sm:text-sm text-slate-400 mt-1 leading-relaxed">
                       {t('calendar.liveFeedDesc', 'Subscribe in Google Calendar, Apple Calendar, or Outlook to keep family birthdays & events updated automatically.')}
                     </p>
                   </div>
                 </div>
 
                 {/* HTTPS URL */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
                     {t('calendar.feedUrlLabel', 'Calendar Feed Subscription URL (HTTPS)')}
                   </label>
                   <div className="flex items-center space-x-2">
@@ -107,11 +107,11 @@ const CalendarExportModal = ({ treeId, treeName, isOpen, onClose }) => {
                       type="text"
                       readOnly
                       value={feedData?.feed_url || ''}
-                      className="w-full bg-slate-950 border border-slate-700/70 rounded-lg px-3 py-2 text-xs font-mono text-emerald-300 focus:outline-none"
+                      className="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs font-mono text-emerald-300 focus:outline-none shadow-inner"
                     />
                     <button
                       onClick={() => handleCopy(feedData?.feed_url)}
-                      className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-medium flex items-center space-x-1.5 transition shrink-0"
+                      className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 rounded-xl text-xs font-black flex items-center space-x-1.5 transition shrink-0 shadow-md shadow-emerald-500/20"
                     >
                       {copiedFeed ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                       <span>{copiedFeed ? t('common.copied', 'Copied') : t('common.copy', 'Copy')}</span>
@@ -123,27 +123,27 @@ const CalendarExportModal = ({ treeId, treeName, isOpen, onClose }) => {
                 <div className="pt-2 flex items-center justify-between text-xs">
                   <a
                     href={feedData?.webcal_url}
-                    className="text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 underline font-medium"
+                    className="text-emerald-400 hover:text-emerald-300 flex items-center space-x-1.5 font-bold transition underline"
                   >
                     <span>{t('calendar.openWebcal', 'Open directly in Apple / Default Calendar App')}</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
               </div>
 
               {/* Instant .ICS File Download */}
-              <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5 flex items-center justify-between">
+              <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h4 className="font-semibold text-slate-200 text-sm">
+                  <h4 className="font-extrabold text-slate-100 text-base">
                     {t('calendar.downloadIcsTitle', 'Download .ICS File')}
                   </h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
                     {t('calendar.downloadIcsDesc', 'Manual import snapshot of all current birthdays, anniversaries, and events.')}
                   </p>
                 </div>
                 <button
                   onClick={downloadICS}
-                  className="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-xl text-xs font-semibold flex items-center space-x-2 transition border border-slate-600/60 shrink-0"
+                  className="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-xl text-xs font-black flex items-center space-x-2 transition border border-slate-700/80 shrink-0 shadow-md"
                 >
                   <Download className="w-4 h-4 text-emerald-400" />
                   <span>{t('calendar.downloadIcsBtn', 'Download .ics')}</span>
@@ -152,15 +152,15 @@ const CalendarExportModal = ({ treeId, treeName, isOpen, onClose }) => {
 
               {/* Instructions per Calendar Provider */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">
                   {t('calendar.howToSubscribe', 'How to Add to Your External Calendar')}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 space-y-1.5">
-                    <div className="font-bold text-xs text-amber-400 flex items-center gap-1.5">
+                  <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 space-y-2">
+                    <div className="font-black text-xs text-amber-400 flex items-center gap-1.5">
                       <span>Google Calendar</span>
                     </div>
-                    <ol className="text-[11px] text-slate-400 space-y-1 list-decimal list-inside">
+                    <ol className="text-[11px] text-slate-400 space-y-1.5 list-decimal list-inside leading-relaxed font-medium">
                       <li>Copy the HTTPS URL above.</li>
                       <li>Open Google Calendar web.</li>
                       <li>Click <b>+</b> next to "Other calendars" &gt; <b>From URL</b>.</li>
@@ -168,22 +168,22 @@ const CalendarExportModal = ({ treeId, treeName, isOpen, onClose }) => {
                     </ol>
                   </div>
 
-                  <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 space-y-1.5">
-                    <div className="font-bold text-xs text-sky-400 flex items-center gap-1.5">
+                  <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 space-y-2">
+                    <div className="font-black text-xs text-sky-400 flex items-center gap-1.5">
                       <span>Apple Calendar (iOS / Mac)</span>
                     </div>
-                    <ol className="text-[11px] text-slate-400 space-y-1 list-decimal list-inside">
+                    <ol className="text-[11px] text-slate-400 space-y-1.5 list-decimal list-inside leading-relaxed font-medium">
                       <li>Click "Open directly" link or copy URL.</li>
                       <li>File &gt; New Calendar Subscription on Mac.</li>
-                      <li>Or Settings &gt; Calendar &gt; Accounts &gt; Add Subscription on iPhone.</li>
+                      <li>Or Settings &gt; Calendar &gt; Accounts on iPhone.</li>
                     </ol>
                   </div>
 
-                  <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 space-y-1.5">
-                    <div className="font-bold text-xs text-indigo-400 flex items-center gap-1.5">
+                  <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 space-y-2">
+                    <div className="font-black text-xs text-indigo-400 flex items-center gap-1.5">
                       <span>Outlook / Office 365</span>
                     </div>
-                    <ol className="text-[11px] text-slate-400 space-y-1 list-decimal list-inside">
+                    <ol className="text-[11px] text-slate-400 space-y-1.5 list-decimal list-inside leading-relaxed font-medium">
                       <li>Open Outlook Calendar.</li>
                       <li>Click <b>Add Calendar</b> &gt; <b>Subscribe from web</b>.</li>
                       <li>Paste URL &amp; save.</li>
@@ -196,10 +196,10 @@ const CalendarExportModal = ({ treeId, treeName, isOpen, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/40 flex justify-end">
+        <div className="px-6 sm:px-8 py-5 border-t border-slate-800/80 bg-slate-950/70 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition"
+            className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-black transition"
           >
             {t('common.close', 'Close')}
           </button>
